@@ -1,134 +1,55 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Plus, Compass, Mic, Settings } from 'lucide-react';
+import StartPage from './StartPage';
 import '../styles/BrowserView.css';
 
-function BrowserView({ url, onNavigate }) {
-  const [searchValue, setSearchValue] = useState('');
+function BrowserView({ url, onNavigate, zoom = 1 }) {
   const [isLoading, setIsLoading] = useState(false);
 
-  // Reset loading state when URL changes
   useEffect(() => {
-    if (url && url.trim() !== '') {
-      setIsLoading(true);
-    } else {
-      setIsLoading(false);
-    }
+    setIsLoading(!!(url && url.trim()));
   }, [url]);
 
-  const handleSearchSubmit = (e) => {
-    if (e.key === 'Enter') {
-      onNavigate(searchValue);
-    }
-  };
+  // Logic: The Start Page should ALWAYS be 100% scale (unzoomed).
+  const isStartPage = !url || url.trim() === '';
 
-  const handleShortcutClick = (site) => {
-    onNavigate(site);
-  };
-
-  const handleIframeLoad = () => {
-    setIsLoading(false);
-  };
-
-  // If no URL, render the Start Page (now labeled "New Tab")
-  if (!url || url.trim() === '') {
-    return (
-      <div className="browser-view start-page" role="region" aria-label="New Tab">
-        
-        {/* Header - Custom Actions */}
-        <div className="sp-header">
-          <div className="sp-pill">
-            <span className="sp-pill-text">Weather: 24°C</span>
-          </div>
-          <div className="sp-actions">
-            <div className="sp-icon-btn" title="Settings" onClick={() => alert("Opening Settings...")}>
-              <Settings size={18} />
-            </div>
-            <div className="sp-profile" title="User Profile" onClick={() => alert("User Profile")}>
-              <div className="sp-avatar">U</div>
-            </div>
-          </div>
-        </div>
-
-        {/* Central Content */}
-        <div className="sp-content">
-          {/* Custom Branding */}
-          <div className="sp-brand">
-            <Compass size={64} className="sp-brand-icon" />
-            <h1 className="sp-logo">ATLAS</h1>
-          </div>
-
-          {/* Modern Search */}
-          <div className="sp-search-wrapper">
-            <div className="sp-search-bar">
-              <Search size={20} className="sp-search-icon" />
-              <input 
-                type="text" 
-                placeholder="Search the web..." 
-                className="sp-search-input"
-                autoFocus
-                value={searchValue}
-                onChange={(e) => setSearchValue(e.target.value)}
-                onKeyDown={handleSearchSubmit}
-              />
-              <div className="sp-search-tools">
-                <div className="sp-tool" title="Voice Search" onClick={() => alert("Listening...")}>
-                  <Mic size={18} />
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Card-style Shortcuts - Now Clickable */}
-          <div className="sp-shortcuts-grid">
-            <div className="sp-shortcut-card" onClick={() => handleShortcutClick('https://chat.openai.com')}>
-              <div className="card-icon gradient-1">🤖</div>
-              <span className="card-label">ChatGPT</span>
-            </div>
-            
-            <div className="sp-shortcut-card" onClick={() => handleShortcutClick('https://deepseek.com')}>
-              <div className="card-icon gradient-2">🐋</div>
-              <span className="card-label">DeepSeek</span>
-            </div>
-
-            <div className="sp-shortcut-card" onClick={() => handleShortcutClick('https://react.dev')}>
-              <div className="card-icon gradient-3">⚛️</div>
-              <span className="card-label">React Docs</span>
-            </div>
-
-            <div className="sp-shortcut-card add-new" onClick={() => alert("Add Shortcut Feature")}>
-              <div className="card-icon"><Plus size={24} /></div>
-              <span className="card-label">Add Site</span>
-            </div>
-          </div>
-        </div>
-        
-        {/* Footer info */}
-        <div className="sp-footer">
-          <p>Secure Browser Environment v1.0</p>
-        </div>
-      </div>
-    );
+  if (isStartPage) {
+    return <StartPage onNavigate={onNavigate} />;
   }
 
-  // Active Website View
   const validUrl = url.startsWith('http') ? url : `https://${url}`;
-  
+
+  // CSS Logic for Zooming an Iframe
+  // We scale the container, but we must increase the size of the internal 
+  // frame so that when scaled down/up it fills the space correctly.
+  const zoomStyle = {
+    transform: `scale(${zoom})`,
+    transformOrigin: '0 0',
+    width: `${100 / zoom}%`,
+    height: `${100 / zoom}%`,
+    border: 'none',
+    position: 'absolute',
+    top: 0,
+    left: 0
+  };
+
   return (
     <div className="browser-view" role="region" aria-label="Browser content">
-      <div className="browser-view-content">
-        <iframe 
-          src={validUrl} 
-          title="Browser Content"
-          className="browser-iframe"
-          sandbox="allow-scripts allow-same-origin allow-forms"
-          onLoad={handleIframeLoad}
-        />
+      <div className="browser-view-content" style={{ overflow: 'hidden', position: 'relative' }}>
+        <div style={zoomStyle}>
+          <iframe 
+            src={validUrl} 
+            title="Browser Content"
+            className="browser-iframe"
+            sandbox="allow-scripts allow-same-origin allow-forms"
+            onLoad={() => setIsLoading(false)}
+            style={{ width: '100%', height: '100%', border: 'none' }}
+          />
+        </div>
         
         {isLoading && (
           <div className="iframe-overlay">
             <div className="loader"></div>
-            <p>Loading {url}...</p>
-            <small style={{opacity: 0.5}}>(Note: Some sites block embedded viewing)</small>
+            <p>Loading...</p>
           </div>
         )}
       </div>

@@ -1,6 +1,5 @@
 import React from 'react';
 import BrowserWindow from './components/BrowserWindow';
-import './App.css';
 
 function App() {
   return (

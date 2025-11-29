@@ -1,108 +1,49 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import NavigationControls from './NavigationControls';
 import AddressBar from './AddressBar';
 import Tabs from './Tabs';
 import BrowserView from './BrowserView';
-import { Mail, Youtube, Map, FolderHeart, MoreHorizontal } from 'lucide-react';
+import HistoryModal from './HistoryModal';
+import { 
+  Mail, Youtube, Map, MoreHorizontal, 
+  ExternalLink, Clock, Settings, Plus, Star,
+  ZoomIn, ZoomOut, RotateCcw
+} from 'lucide-react';
+import { useBrowser } from '../hooks/useBrowser';
 import '../styles/Browser.css';
 
 function BrowserWindow() {
-  const [tabs, setTabs] = useState([
-    { id: 1, title: 'New Tab', url: '', history: [''], currentIndex: 0 }
-  ]);
-  const [activeTabId, setActiveTabId] = useState(1);
-  const [currentUrl, setCurrentUrl] = useState('');
+  const { 
+    tabs, activeTab, activeTabId, globalHistory, bookmarks, isCurrentBookmarked,
+    setActiveTabId, actions 
+  } = useBrowser();
+  
+  // UI States
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
+  const menuRef = useRef(null);
 
-  // Find active tab using the ID directly
-  const activeTab = tabs.find(tab => tab.id === activeTabId) || tabs[0];
-
-  // Sync address bar when switching tabs
+  // Close menu when clicking outside
   useEffect(() => {
-    if (activeTab) {
-      setCurrentUrl(activeTab.url);
-    }
-  }, [activeTabId, tabs]);
-
-  const updateActiveTab = (updates) => {
-    setTabs(prevTabs => prevTabs.map(tab => 
-      tab.id === activeTabId ? { ...tab, ...updates } : tab
-    ));
-  };
-
-  // --- Navigation Logic ---
-  const handleNavigate = (url) => {
-    // Normalize URL (add https if missing)
-    let finalUrl = url;
-    if (url && !url.startsWith('http') && !url.startsWith('file')) {
-        if (url.includes('.') && !url.includes(' ')) {
-            finalUrl = `https://${url}`;
-        } else {
-            // Treat as search query if it doesn't look like a domain
-            finalUrl = `https://www.google.com/search?q=${encodeURIComponent(url)}`;
-        }
-    }
-
-    const newHistory = [...activeTab.history.slice(0, activeTab.currentIndex + 1), finalUrl];
-    updateActiveTab({ 
-      url: finalUrl, 
-      title: finalUrl || 'New Tab', 
-      history: newHistory, 
-      currentIndex: newHistory.length - 1 
-    });
-    setCurrentUrl(finalUrl);
-  };
-
-  const handleBack = () => {
-    if (activeTab.currentIndex > 0) {
-      const newIndex = activeTab.currentIndex - 1;
-      const newUrl = activeTab.history[newIndex];
-      updateActiveTab({ currentIndex: newIndex, url: newUrl, title: newUrl || 'New Tab' });
-    }
-  };
-
-  const handleForward = () => {
-    if (activeTab.currentIndex < activeTab.history.length - 1) {
-      const newIndex = activeTab.currentIndex + 1;
-      const newUrl = activeTab.history[newIndex];
-      updateActiveTab({ currentIndex: newIndex, url: newUrl, title: newUrl || 'New Tab' });
-    }
-  };
-
-  const handleRefresh = () => { 
-    // Force iframe reload by updating a refresh timestamp
-    updateActiveTab({ lastRefresh: Date.now() });
-  };
+    const handleClickOutside = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setIsMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const handleHome = () => {
-    // Prevent action if already on the home page (New Tab)
-    if (activeTab.url === '') return;
-    
-    handleNavigate('');
+    if (activeTab.url && activeTab.url.trim() !== '') {
+      actions.navigate('');
+    }
   };
 
-  // --- Tab Management ---
-  const handleTabChange = (id) => setActiveTabId(id);
-  
-  const handleTabClose = (id) => {
-    setTabs(prev => {
-      if (prev.length === 1) return prev; // Don't close last tab
-      const newTabs = prev.filter(t => t.id !== id);
-      if (id === activeTabId) {
-        // If closing active tab, switch to the one before it
-        const index = prev.findIndex(t => t.id === id);
-        const newActive = newTabs[index - 1] || newTabs[0];
-        setActiveTabId(newActive.id);
-      }
-      return newTabs;
-    });
-  };
-
-  const handleAddTab = () => {
-    const newId = Math.max(...tabs.map(t => t.id), 0) + 1;
-    const newTab = { id: newId, title: 'New Tab', url: '', history: [''], currentIndex: 0 };
-    
-    setTabs(prev => [...prev, newTab]);
-    setActiveTabId(newId);
+  const handleOpenExternal = () => {
+    if (activeTab.url) {
+      window.open(activeTab.url, '_blank', 'noopener,noreferrer');
+    }
   };
 
   return (
@@ -110,63 +51,124 @@ function BrowserWindow() {
       <Tabs
         tabs={tabs}
         activeTabId={activeTabId}
-        onTabChange={handleTabChange}
-        onTabClose={handleTabClose}
-        onAddTab={handleAddTab}
+        onTabChange={setActiveTabId}
+        onTabClose={actions.closeTab}
+        onAddTab={actions.addTab}
       />
 
       <div className="browser-toolbar">
         <NavigationControls
-          onBack={handleBack}
-          onForward={handleForward}
-          onRefresh={handleRefresh}
+          onBack={actions.goBack}
+          onForward={actions.goForward}
+          onRefresh={actions.refresh}
           onHome={handleHome}
-          canGoBack={activeTab?.currentIndex > 0}
-          canGoForward={activeTab?.currentIndex < activeTab?.history.length - 1}
+          canGoBack={activeTab.currentIndex > 0}
+          canGoForward={activeTab.currentIndex < activeTab.history.length - 1}
         />
+        
         <AddressBar
-          url={currentUrl}
-          onUrlChange={setCurrentUrl}
-          onUrlSubmit={handleNavigate}
+          url={activeTab.url}
+          onUrlChange={() => {}} 
+          onUrlSubmit={actions.navigate}
+          isBookmarked={isCurrentBookmarked}
+          onToggleBookmark={actions.toggleBookmark}
         />
-        <div 
-          style={{ padding: '0 8px', color: 'var(--text-secondary)', cursor: 'pointer' }}
-          onClick={() => alert("Browser Settings Menu (Simulation)")}
-          title="Settings"
-        >
-          <MoreHorizontal size={20} />
+
+        <div className="toolbar-actions">
+          {activeTab.url && (
+            <button 
+              className="toolbar-btn" 
+              onClick={handleOpenExternal}
+              title="Open in system browser"
+            >
+              <ExternalLink size={18} />
+            </button>
+          )}
+
+          <div className="menu-container" ref={menuRef}>
+            <button 
+              className={`toolbar-btn ${isMenuOpen ? 'active' : ''}`} 
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              title="Menu"
+            >
+              <MoreHorizontal size={20} />
+            </button>
+
+            {isMenuOpen && (
+              <div className="browser-menu">
+                <div className="menu-item" onClick={() => { actions.addTab(); setIsMenuOpen(false); }}>
+                  <Plus size={16} /> New Tab
+                </div>
+                
+                {/* Zoom Controls */}
+                <div className="menu-row">
+                   <span className="menu-label">Zoom: {Math.round(activeTab.zoom * 100)}%</span>
+                   <div className="zoom-controls">
+                     <button className="menu-icon-btn" onClick={() => actions.handleZoom('out')} title="Zoom Out">
+                       <ZoomOut size={16} />
+                     </button>
+                     <button className="menu-icon-btn" onClick={() => actions.handleZoom('reset')} title="Reset Zoom">
+                       <RotateCcw size={14} />
+                     </button>
+                     <button className="menu-icon-btn" onClick={() => actions.handleZoom('in')} title="Zoom In">
+                       <ZoomIn size={16} />
+                     </button>
+                   </div>
+                </div>
+
+                <div className="menu-separator"></div>
+
+                <div className="menu-item" onClick={() => { setShowHistory(true); setIsMenuOpen(false); }}>
+                  <Clock size={16} /> History
+                </div>
+                <div className="menu-item" onClick={() => alert("Settings would go here!")}>
+                  <Settings size={16} /> Settings
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* Interactive Bookmarks Bar */}
       <div className="bookmarks-bar">
-        <div className="bookmark-item" onClick={() => handleNavigate('https://mail.google.com')}>
-          <span className="bookmark-icon"><Mail size={14} /></span>
-          <span>Inbox</span>
-        </div>
-        <div className="bookmark-item" onClick={() => handleNavigate('https://youtube.com')}>
-          <span className="bookmark-icon"><Youtube size={14} /></span>
-          <span>Videos</span>
-        </div>
-        <div className="bookmark-item" onClick={() => handleNavigate('https://maps.google.com')}>
-          <span className="bookmark-icon"><Map size={14} /></span>
-          <span>Explore</span>
-        </div>
-        <div className="bookmarks-separator"></div>
-        <div className="bookmark-item" onClick={() => alert("Import Bookmarks Feature")}>
-          <span className="bookmark-icon"><FolderHeart size={14} /></span>
-          <span>Imported</span>
-        </div>
+        <BookmarkItem icon={<Mail size={14} />} label="Inbox" url="https://mail.google.com" onNavigate={actions.navigate} />
+        <BookmarkItem icon={<Youtube size={14} />} label="Videos" url="https://youtube.com" onNavigate={actions.navigate} />
+        <BookmarkItem icon={<Map size={14} />} label="Explore" url="https://maps.google.com" onNavigate={actions.navigate} />
+        
+        {bookmarks.length > 0 && <div className="bookmarks-separator"></div>}
+
+        {bookmarks.map((bookmark, index) => (
+          <div key={`${bookmark.url}-${index}`} className="bookmark-item" onClick={() => actions.navigate(bookmark.url)}>
+            <span className="bookmark-icon"><Star size={14} fill="#FFD700" color="#FFD700" /></span>
+            <span>{bookmark.title}</span>
+          </div>
+        ))}
       </div>
 
       <BrowserView 
-        url={activeTab?.url} 
-        onNavigate={handleNavigate} 
-        // Key includes tab ID to ensure isolation of iframe state between tabs
-        key={`${activeTab?.id}-${activeTab?.lastRefresh || ''}`}
+        url={activeTab.url} 
+        onNavigate={actions.navigate} 
+        zoom={activeTab.zoom}
+        key={`${activeTab.id}-${activeTab.lastRefresh}`} 
       />
+
+      {showHistory && (
+        <HistoryModal 
+          history={globalHistory} 
+          onClose={() => setShowHistory(false)} 
+          onClear={actions.clearHistory}
+          onNavigate={actions.navigate}
+        />
+      )}
     </div>
   );
 }
+
+const BookmarkItem = ({ icon, label, url, onNavigate }) => (
+  <div className="bookmark-item" onClick={() => onNavigate(url)}>
+    <span className="bookmark-icon">{icon}</span>
+    <span>{label}</span>
+  </div>
+);
 
 export default BrowserWindow;

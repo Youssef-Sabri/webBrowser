@@ -1,11 +1,12 @@
 import React from 'react';
 import { X, Plus } from 'lucide-react';
+import { getDisplayTitle } from '../utils/urlHelper';
 import '../styles/Tabs.css';
 
 function Tabs({ tabs, activeTabId, onTabChange, onTabClose, onAddTab }) {
   const handleTabClick = (tabId, e) => {
     if (e.target.closest('.tab-close-button')) {
-      return; // Don't switch tabs if clicking close button
+      return;
     }
     onTabChange(tabId);
   };
@@ -13,18 +14,6 @@ function Tabs({ tabs, activeTabId, onTabChange, onTabClose, onAddTab }) {
   const handleTabClose = (tabId, e) => {
     e.stopPropagation();
     onTabClose(tabId);
-  };
-
-  const getTabTitle = (tab) => {
-    if (tab.url) {
-      try {
-        const url = new URL(tab.url);
-        return url.hostname || 'New Tab';
-      } catch {
-        return tab.title || 'New Tab';
-      }
-    }
-    return tab.title || 'New Tab';
   };
 
   return (
@@ -47,11 +36,11 @@ function Tabs({ tabs, activeTabId, onTabChange, onTabClose, onAddTab }) {
               }
             }}
           >
-            <span className="tab-title">{getTabTitle(tab)}</span>
+            <span className="tab-title">{getDisplayTitle(tab.url)}</span>
             <button
               className="tab-close-button"
               onClick={(e) => handleTabClose(tab.id, e)}
-              aria-label={`Close ${getTabTitle(tab)} tab`}
+              aria-label="Close tab"
               tabIndex={-1}
             >
               <X size={14} aria-hidden="true" />

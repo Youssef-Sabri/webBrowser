@@ -192,6 +192,7 @@
   cursor: pointer;
   transition: all 0.2s ease;
   min-height: 120px;
+  position: relative; /* For delete button */
 }
 
 .sp-shortcut-card:hover {
@@ -199,6 +200,34 @@
   border-color: var(--text-secondary);
   transform: translateY(-4px);
   box-shadow: 0 10px 20px -5px rgba(0,0,0,0.3);
+}
+
+/* Delete Button */
+.shortcut-delete-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: rgba(0,0,0,0.5);
+  border: none;
+  color: var(--text-secondary);
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0;
+  transition: all 0.2s;
+}
+
+.shortcut-delete-btn:hover {
+  background: var(--danger-color);
+  color: white;
+}
+
+.sp-shortcut-card:hover .shortcut-delete-btn {
+  opacity: 1;
 }
 
 .card-icon {
@@ -210,6 +239,12 @@
   justify-content: center;
   border-radius: 16px;
   background: #252525;
+}
+
+.icon-text {
+  font-size: 24px;
+  font-weight: 700;
+  color: white;
 }
 
 /* Gradient backgrounds for shortcut icons */
@@ -306,4 +341,135 @@
   .sp-logo {
     font-size: 36px;
   }
+}
+
+/* --- Modal Styles --- */
+.sp-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+}
+
+.sp-modal {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  width: 400px;
+  max-width: 90%;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+  animation: slideUp 0.2s ease-out;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.sp-modal-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.sp-modal-header h3 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 16px;
+}
+
+.sp-close-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+}
+
+.sp-close-btn:hover {
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+.sp-modal-body {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.sp-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sp-input-group label {
+  font-size: 13px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.sp-input-group input {
+  background-color: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  padding: 10px 12px;
+  border-radius: 6px;
+  color: var(--text-primary);
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.sp-input-group input:focus {
+  border-color: var(--accent-color);
+}
+
+.sp-modal-footer {
+  padding: 16px 20px;
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.sp-btn-cancel {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.sp-btn-cancel:hover {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+.sp-btn-submit {
+  background-color: var(--accent-color);
+  border: none;
+  color: #000;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: filter 0.2s;
+}
+
+.sp-btn-submit:hover {
+  filter: brightness(1.1);
 }
