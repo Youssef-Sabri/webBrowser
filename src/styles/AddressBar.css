@@ -1,0 +1,73 @@
+.address-bar {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 0 12px;
+  min-height: 36px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  max-width: 100%;
+}
+
+.address-bar.focused {
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
+}
+
+.address-bar-icon {
+  display: flex;
+  align-items: center;
+  color: var(--text-secondary);
+  margin-right: 8px;
+  flex-shrink: 0;
+}
+
+.address-bar-input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  color: var(--text-primary);
+  font-size: 14px;
+  font-family: inherit;
+  outline: none;
+  min-width: 0;
+}
+
+.address-bar-input::placeholder {
+  color: var(--text-secondary);
+  opacity: 0.7;
+}
+
+.address-bar-input:focus {
+  outline: none;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .address-bar {
+    min-width: 200px;
+    padding: 0 10px;
+  }
+  
+  .address-bar-input {
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 480px) {
+  .address-bar {
+    min-height: 32px;
+    padding: 0 8px;
+  }
+  
+  .address-bar-input {
+    font-size: 12px;
+  }
+  
+  .address-bar-icon {
+    margin-right: 6px;
+  }
+}
+
