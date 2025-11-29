@@ -2,12 +2,13 @@ import React from 'react';
 import { ArrowLeft, ArrowRight, RotateCw, Home } from 'lucide-react';
 import '../styles/NavigationControls.css';
 
-function NavigationControls({ onBack, onForward, onRefresh, onHome }) {
+function NavigationControls({ onBack, onForward, onRefresh, onHome, canGoBack, canGoForward }) {
   return (
     <div className="navigation-controls" role="toolbar" aria-label="Navigation controls">
       <button
         className="nav-button"
         onClick={onBack}
+        disabled={!canGoBack}
         aria-label="Go back"
         title="Go back"
       >
@@ -16,6 +17,7 @@ function NavigationControls({ onBack, onForward, onRefresh, onHome }) {
       <button
         className="nav-button"
         onClick={onForward}
+        disabled={!canGoForward}
         aria-label="Go forward"
         title="Go forward"
       >
@@ -42,4 +44,3 @@ function NavigationControls({ onBack, onForward, onRefresh, onHome }) {
 }
 
 export default NavigationControls;
-

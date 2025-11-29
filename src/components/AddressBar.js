@@ -7,32 +7,25 @@ function AddressBar({ url, onUrlChange, onUrlSubmit }) {
   const [isFocused, setIsFocused] = useState(false);
   const inputRef = useRef(null);
 
+  // Sync internal state when parent URL changes (e.g., from Back/Forward navigation)
   useEffect(() => {
     setInputValue(url);
   }, [url]);
 
   const handleInputChange = (e) => {
-    const value = e.target.value;
-    setInputValue(value);
-    onUrlChange(value);
+    setInputValue(e.target.value);
+    onUrlChange(e.target.value);
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const trimmedUrl = inputValue.trim();
-    if (trimmedUrl) {
-      // Basic URL validation - add protocol if missing
-      let formattedUrl = trimmedUrl;
-      if (!trimmedUrl.match(/^https?:\/\//i)) {
-        formattedUrl = 'https://' + trimmedUrl;
-      }
-      onUrlSubmit(formattedUrl);
-      setInputValue(formattedUrl);
-    }
+    onUrlSubmit(inputValue);
+    inputRef.current?.blur();
   };
 
   const handleFocus = () => {
     setIsFocused(true);
+    // Auto-select text on focus for easier typing
     if (inputRef.current) {
       inputRef.current.select();
     }
@@ -45,11 +38,12 @@ function AddressBar({ url, onUrlChange, onUrlSubmit }) {
   const handleKeyDown = (e) => {
     if (e.key === 'Escape') {
       inputRef.current?.blur();
+      // Revert to current page URL on escape
+      setInputValue(url);
     }
   };
 
   const isSecure = url && url.startsWith('https://');
-  const displayUrl = url || '';
 
   return (
     <form 
@@ -60,9 +54,9 @@ function AddressBar({ url, onUrlChange, onUrlSubmit }) {
     >
       <div className="address-bar-icon">
         {isSecure ? (
-          <Lock size={16} aria-hidden="true" />
+          <Lock size={14} aria-hidden="true" color="var(--success-color, #69F0AE)" />
         ) : (
-          <Search size={16} aria-hidden="true" />
+          <Search size={14} aria-hidden="true" />
         )}
       </div>
       <input
@@ -74,8 +68,7 @@ function AddressBar({ url, onUrlChange, onUrlSubmit }) {
         onFocus={handleFocus}
         onBlur={handleBlur}
         onKeyDown={handleKeyDown}
-        placeholder="Enter URL or search"
-        aria-label="Address bar input"
+        placeholder="Search or enter address"
         autoComplete="off"
         spellCheck="false"
       />
@@ -84,4 +77,3 @@ function AddressBar({ url, onUrlChange, onUrlSubmit }) {
 }
 
 export default AddressBar;
-

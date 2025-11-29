@@ -50,3 +50,13 @@
   }
 }
 
+.nav-button:disabled {
+  opacity: 0.3; /* Lower opacity for clearer disabled state */
+  cursor: default; /* Remove pointer cursor */
+  pointer-events: none; /* Prevent hover effects */
+}
+
+/* Remove hover background for disabled buttons */
+.nav-button:disabled:hover {
+  background-color: transparent;
+}
