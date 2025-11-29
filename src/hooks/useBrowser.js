@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import { normalizeUrl, getDisplayTitle } from '../utils/urlHelper';
+import { DEFAULT_SEARCH_ENGINE } from '../utils/constants';
 
 export const useBrowser = () => {
   // Tabs State (now includes zoom)
@@ -14,6 +15,9 @@ export const useBrowser = () => {
   // Bookmarks State
   const [bookmarks, setBookmarks] = useState([]);
 
+  // Search Engine State
+  const [searchEngine, setSearchEngine] = useState(DEFAULT_SEARCH_ENGINE);
+
   const activeTab = tabs.find(t => t.id === activeTabId) || tabs[0];
 
   const updateActiveTab = (updates) => {
@@ -25,7 +29,8 @@ export const useBrowser = () => {
   // --- Actions ---
 
   const navigate = useCallback((urlInput) => {
-    const finalUrl = normalizeUrl(urlInput);
+    // Pass the user's preferred search engine to the normalizer
+    const finalUrl = normalizeUrl(urlInput, searchEngine);
     const title = getDisplayTitle(finalUrl);
     
     // Update Tab History
@@ -36,8 +41,6 @@ export const useBrowser = () => {
       title: title, 
       history: newHistory, 
       currentIndex: newHistory.length - 1,
-      // Optional: Reset zoom on navigation? Most browsers keep it per domain, 
-      // but per-tab persistence is standard behavior. We'll keep it.
     });
 
     if (finalUrl && finalUrl.trim() !== '') {
@@ -46,7 +49,7 @@ export const useBrowser = () => {
         ...prev
       ]);
     }
-  }, [activeTab, activeTabId]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [activeTab, activeTabId, searchEngine]); // Added searchEngine dependency
 
   const goBack = () => {
     if (activeTab.currentIndex > 0) {
@@ -117,6 +120,8 @@ export const useBrowser = () => {
     activeTabId,
     globalHistory,
     bookmarks,
+    searchEngine,     // Exported state
+    setSearchEngine,  // Exported setter
     isCurrentBookmarked: bookmarks.some(b => b.url === activeTab.url),
     setActiveTabId,
     actions: {
@@ -128,7 +133,7 @@ export const useBrowser = () => {
       closeTab,
       clearHistory,
       toggleBookmark,
-      handleZoom // Exported action
+      handleZoom
     }
   };
 };

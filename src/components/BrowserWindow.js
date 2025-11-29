@@ -4,6 +4,7 @@ import AddressBar from './AddressBar';
 import Tabs from './Tabs';
 import BrowserView from './BrowserView';
 import HistoryModal from './HistoryModal';
+import SettingsModal from './SettingsModal'; // Added import
 import { 
   Mail, Youtube, Map, MoreHorizontal, 
   ExternalLink, Clock, Settings, Plus, Star,
@@ -15,12 +16,14 @@ import '../styles/Browser.css';
 function BrowserWindow() {
   const { 
     tabs, activeTab, activeTabId, globalHistory, bookmarks, isCurrentBookmarked,
+    searchEngine, setSearchEngine, // Destructure new values
     setActiveTabId, actions 
   } = useBrowser();
   
   // UI States
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
+  const [showSettings, setShowSettings] = useState(false); // Added state
   const menuRef = useRef(null);
 
   // Close menu when clicking outside
@@ -121,7 +124,7 @@ function BrowserWindow() {
                 <div className="menu-item" onClick={() => { setShowHistory(true); setIsMenuOpen(false); }}>
                   <Clock size={16} /> History
                 </div>
-                <div className="menu-item" onClick={() => alert("Settings would go here!")}>
+                <div className="menu-item" onClick={() => { setShowSettings(true); setIsMenuOpen(false); }}>
                   <Settings size={16} /> Settings
                 </div>
               </div>
@@ -158,6 +161,14 @@ function BrowserWindow() {
           onClose={() => setShowHistory(false)} 
           onClear={actions.clearHistory}
           onNavigate={actions.navigate}
+        />
+      )}
+
+      {showSettings && (
+        <SettingsModal 
+          currentEngine={searchEngine}
+          onSetEngine={setSearchEngine}
+          onClose={() => setShowSettings(false)}
         />
       )}
     </div>

@@ -9,7 +9,6 @@ function BrowserView({ url, onNavigate, zoom = 1 }) {
     setIsLoading(!!(url && url.trim()));
   }, [url]);
 
-  // Logic: The Start Page should ALWAYS be 100% scale (unzoomed).
   const isStartPage = !url || url.trim() === '';
 
   if (isStartPage) {
@@ -18,9 +17,7 @@ function BrowserView({ url, onNavigate, zoom = 1 }) {
 
   const validUrl = url.startsWith('http') ? url : `https://${url}`;
 
-  // CSS Logic for Zooming an Iframe
-  // We scale the container, but we must increase the size of the internal 
-  // frame so that when scaled down/up it fills the space correctly.
+
   const zoomStyle = {
     transform: `scale(${zoom})`,
     transformOrigin: '0 0',
