@@ -29,33 +29,36 @@ function Tabs({ tabs, activeTabId, onTabChange, onTabClose, onAddTab }) {
 
   return (
     <div className="tabs-container" role="tablist" aria-label="Browser tabs">
-      {tabs.map((tab) => (
-        <div
-          key={tab.id}
-          className={`tab ${tab.active ? 'active' : ''}`}
-          role="tab"
-          aria-selected={tab.active}
-          aria-controls={`tab-panel-${tab.id}`}
-          tabIndex={tab.active ? 0 : -1}
-          onClick={(e) => handleTabClick(tab.id, e)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-              e.preventDefault();
-              handleTabClick(tab.id, e);
-            }
-          }}
-        >
-          <span className="tab-title">{getTabTitle(tab)}</span>
-          <button
-            className="tab-close-button"
-            onClick={(e) => handleTabClose(tab.id, e)}
-            aria-label={`Close ${getTabTitle(tab)} tab`}
-            tabIndex={-1}
+      {tabs.map((tab) => {
+        const isActive = tab.id === activeTabId;
+        return (
+          <div
+            key={tab.id}
+            className={`tab ${isActive ? 'active' : ''}`}
+            role="tab"
+            aria-selected={isActive}
+            aria-controls={`tab-panel-${tab.id}`}
+            tabIndex={isActive ? 0 : -1}
+            onClick={(e) => handleTabClick(tab.id, e)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                handleTabClick(tab.id, e);
+              }
+            }}
           >
-            <X size={14} aria-hidden="true" />
-          </button>
-        </div>
-      ))}
+            <span className="tab-title">{getTabTitle(tab)}</span>
+            <button
+              className="tab-close-button"
+              onClick={(e) => handleTabClose(tab.id, e)}
+              aria-label={`Close ${getTabTitle(tab)} tab`}
+              tabIndex={-1}
+            >
+              <X size={14} aria-hidden="true" />
+            </button>
+          </div>
+        );
+      })}
       <button
         className="tab-add-button"
         onClick={onAddTab}
@@ -69,4 +72,3 @@ function Tabs({ tabs, activeTabId, onTabChange, onTabClose, onAddTab }) {
 }
 
 export default Tabs;
-

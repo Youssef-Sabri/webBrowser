@@ -3,17 +3,18 @@ import NavigationControls from './NavigationControls';
 import AddressBar from './AddressBar';
 import Tabs from './Tabs';
 import BrowserView from './BrowserView';
-import { Mail, Youtube, Map, FolderHeart, Star, MoreHorizontal } from 'lucide-react';
+import { Mail, Youtube, Map, FolderHeart, MoreHorizontal } from 'lucide-react';
 import '../styles/Browser.css';
 
 function BrowserWindow() {
   const [tabs, setTabs] = useState([
-    { id: 1, title: 'Start Page', url: '', history: [''], currentIndex: 0, active: true }
+    { id: 1, title: '', url: 'New Tab', history: [''], currentIndex: 0 }
   ]);
   const [activeTabId, setActiveTabId] = useState(1);
   const [currentUrl, setCurrentUrl] = useState('');
 
-  const activeTab = tabs.find(tab => tab.active) || tabs[0];
+  // Find active tab using the ID directly
+  const activeTab = tabs.find(tab => tab.id === activeTabId) || tabs[0];
 
   // Sync address bar when switching tabs
   useEffect(() => {
@@ -97,9 +98,9 @@ function BrowserWindow() {
 
   const handleAddTab = () => {
     const newId = Math.max(...tabs.map(t => t.id), 0) + 1;
-    const newTab = { id: newId, title: 'Start Page', url: '', history: [''], currentIndex: 0, active: true };
+    const newTab = { id: newId, title: 'Start Page', url: '', history: [''], currentIndex: 0 };
     
-    setTabs(prev => prev.map(t => ({...t, active: false})).concat(newTab));
+    setTabs(prev => [...prev, newTab]);
     setActiveTabId(newId);
   };
 
@@ -149,10 +150,6 @@ function BrowserWindow() {
         <div className="bookmark-item" onClick={() => handleNavigate('https://maps.google.com')}>
           <span className="bookmark-icon"><Map size={14} /></span>
           <span>Explore</span>
-        </div>
-        <div className="bookmark-item" onClick={() => handleNavigate('https://github.com')}>
-          <span className="bookmark-icon"><Star size={14} /></span>
-          <span>Favorites</span>
         </div>
         <div className="bookmarks-separator"></div>
         <div className="bookmark-item" onClick={() => alert("Import Bookmarks Feature")}>

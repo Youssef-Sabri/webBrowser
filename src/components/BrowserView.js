@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, Plus, Compass, Command, Mic, Settings } from 'lucide-react';
+import { Search, Plus, Compass, Mic, Settings } from 'lucide-react';
 import '../styles/BrowserView.css';
 
 function BrowserView({ url, onNavigate }) {
@@ -40,7 +40,7 @@ function BrowserView({ url, onNavigate }) {
           {/* Custom Branding */}
           <div className="sp-brand">
             <Compass size={64} className="sp-brand-icon" />
-            <h1 className="sp-logo">Orbit</h1>
+            <h1 className="sp-logo">ATLAS</h1>
           </div>
 
           {/* Modern Search */}
@@ -59,9 +59,6 @@ function BrowserView({ url, onNavigate }) {
               <div className="sp-search-tools">
                 <div className="sp-tool" title="Voice Search" onClick={() => alert("Listening...")}>
                   <Mic size={18} />
-                </div>
-                <div className="sp-tool kbd-shortcut" title="Command Palette" onClick={() => alert("Command Palette (Ctrl+K)")}>
-                  <Command size={16} />
                 </div>
               </div>
             </div>
