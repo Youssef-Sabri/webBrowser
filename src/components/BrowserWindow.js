@@ -69,10 +69,8 @@ function BrowserWindow() {
   };
 
   const handleRefresh = () => { 
-    console.log('Reloading:', currentUrl);
-    // Force a React re-render of the BrowserView by passing a timestamp or toggling a state could go here
-    // For now, we just update the URL state to itself to simulate activity
-    setCurrentUrl(prev => prev); 
+    // Force iframe reload by updating a refresh timestamp
+    updateActiveTab({ lastRefresh: Date.now() });
   };
 
   const handleHome = () => {
@@ -161,6 +159,7 @@ function BrowserWindow() {
       <BrowserView 
         url={activeTab?.url} 
         onNavigate={handleNavigate} 
+        key={activeTab?.lastRefresh}
       />
     </div>
   );

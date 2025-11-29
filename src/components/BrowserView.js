@@ -1,16 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Search, Plus, Compass, Mic, Settings } from 'lucide-react';
 import '../styles/BrowserView.css';
 
 function BrowserView({ url, onNavigate }) {
   const [searchValue, setSearchValue] = useState('');
-  // 1. Add state to track if the page is currently loading
-  const [isLoading, setIsLoading] = useState(true);
-
-  // 2. Whenever the URL changes, show the loading screen again
-  useEffect(() => {
-    setIsLoading(true);
-  }, [url]);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleSearchSubmit = (e) => {
     if (e.key === 'Enter') {
@@ -109,17 +103,15 @@ function BrowserView({ url, onNavigate }) {
   return (
     <div className="browser-view" role="region" aria-label="Browser content">
       <div className="browser-view-content">
-        {/* Note: Real external sites may refuse to load in an iframe due to X-Frame-Options */}
         <iframe 
           src={validUrl} 
           title="Browser Content"
           className="browser-iframe"
           sandbox="allow-scripts allow-same-origin allow-forms"
-          // 3. When the iframe finishes loading, set isLoading to false
+          onLoadStart={() => setIsLoading(true)}
           onLoad={() => setIsLoading(false)}
         />
         
-        {/* 4. Only show this overlay IF isLoading is true */}
         {isLoading && (
           <div className="iframe-overlay">
             <div className="loader"></div>

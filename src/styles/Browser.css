@@ -21,6 +21,13 @@
   --danger-color: #FF5252;
   --success-color: #69F0AE;
   
+  /* Tab Colors */
+  --tab-inactive-bg: #1A1A1A;
+  --tab-active-bg: #121212;
+  
+  /* Shadows */
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.3);
+  
   /* UI Metrics */
   --nav-height: 48px;
   --border-radius-md: 6px;
