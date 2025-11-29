@@ -14,7 +14,9 @@ function AddressBar({ url, onUrlChange, onUrlSubmit }) {
 
   const handleInputChange = (e) => {
     setInputValue(e.target.value);
-    onUrlChange(e.target.value);
+    if (onUrlChange) {
+      onUrlChange(e.target.value);
+    }
   };
 
   const handleSubmit = (e) => {

@@ -4,7 +4,8 @@ import App from './App';
 test('renders browser window', () => {
   render(<App />);
   // Check if the browser window component is rendered
-  const browserElement = screen.getByRole('region', { name: /start page/i });
+  // Updated to match the new aria-label "New Tab"
+  const browserElement = screen.getByRole('region', { name: /new tab/i });
   expect(browserElement).toBeInTheDocument();
 });
 

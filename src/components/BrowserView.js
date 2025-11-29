@@ -1,10 +1,19 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Search, Plus, Compass, Mic, Settings } from 'lucide-react';
 import '../styles/BrowserView.css';
 
 function BrowserView({ url, onNavigate }) {
   const [searchValue, setSearchValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+
+  // Reset loading state when URL changes
+  useEffect(() => {
+    if (url && url.trim() !== '') {
+      setIsLoading(true);
+    } else {
+      setIsLoading(false);
+    }
+  }, [url]);
 
   const handleSearchSubmit = (e) => {
     if (e.key === 'Enter') {
@@ -16,10 +25,14 @@ function BrowserView({ url, onNavigate }) {
     onNavigate(site);
   };
 
-  // If no URL, render the Start Page
+  const handleIframeLoad = () => {
+    setIsLoading(false);
+  };
+
+  // If no URL, render the Start Page (now labeled "New Tab")
   if (!url || url.trim() === '') {
     return (
-      <div className="browser-view start-page" role="region" aria-label="Start Page">
+      <div className="browser-view start-page" role="region" aria-label="New Tab">
         
         {/* Header - Custom Actions */}
         <div className="sp-header">
@@ -108,8 +121,7 @@ function BrowserView({ url, onNavigate }) {
           title="Browser Content"
           className="browser-iframe"
           sandbox="allow-scripts allow-same-origin allow-forms"
-          onLoadStart={() => setIsLoading(true)}
-          onLoad={() => setIsLoading(false)}
+          onLoad={handleIframeLoad}
         />
         
         {isLoading && (
