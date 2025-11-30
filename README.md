@@ -25,7 +25,7 @@ A modern, React-based web browser simulation built as a comprehensive Web Progra
 
 1.  **Clone the repository**
     ```bash
-    git clone [git clone https://github.com/Youssef-Sabri/webBrowser]
+    [git clone https://github.com/Youssef-Sabri/webBrowser]
     cd webBrowser
     ```
 
