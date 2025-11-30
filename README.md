@@ -25,8 +25,8 @@ A modern, React-based web browser simulation built as a comprehensive Web Progra
 
 1.  **Clone the repository**
     ```bash
-    git clone [https://github.com/your-username/atlas-browser.git](https://github.com/your-username/atlas-browser.git)
-    cd atlas-browser
+    git clone [git clone https://github.com/Youssef-Sabri/webBrowser]
+    cd webBrowser
     ```
 
 2.  **Install dependencies**
