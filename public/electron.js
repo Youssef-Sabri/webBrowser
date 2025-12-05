@@ -1,13 +1,14 @@
 const { app, BrowserWindow } = require('electron');
 const path = require('path');
-const { fork } = require('child_process'); // Used to spawn the backend
+const { fork } = require('child_process');
+require('dotenv').config({ path: path.join(__dirname, '../Backend/.env') });
 
 let mainWindow;
 let serverProcess;
 
 function createServer() {
   // Spawn the backend/server.js as a child process
-  const serverPath = path.join(__dirname, '../backend/server.js');
+  const serverPath = path.join(__dirname, '../Backend/server.js');
   serverProcess = fork(serverPath);
   
   console.log(`Backend process spawned with PID: ${serverProcess.pid}`);
