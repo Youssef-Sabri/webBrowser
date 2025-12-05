@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { normalizeUrl, getDisplayTitle } from '../utils/urlHelper';
 import { DEFAULT_SEARCH_ENGINE } from '../utils/constants';
 
@@ -20,9 +20,55 @@ export const useBrowser = () => {
   const [globalHistory, setGlobalHistory] = useState([]);
   const [bookmarks, setBookmarks] = useState([]);
   const [searchEngine, setSearchEngine] = useState(DEFAULT_SEARCH_ENGINE);
-  const [shortcuts, setShortcuts] = useState([]); // No default mock data
+  const [shortcuts, setShortcuts] = useState([]); 
 
   const activeTab = tabs.find(t => t.id === activeTabId) || tabs[0];
+
+  // --- Helper: Load User Data into State ---
+  const loadUserData = useCallback((userData) => {
+    if (userData.history) setGlobalHistory(userData.history);
+    if (userData.bookmarks) setBookmarks(userData.bookmarks);
+    if (userData.shortcuts) setShortcuts(userData.shortcuts);
+    if (userData.settings?.searchEngine) setSearchEngine(userData.settings.searchEngine);
+    if (userData.tabs && userData.tabs.length > 0) {
+      setTabs(userData.tabs);
+      setActiveTabId(userData.tabs[0].id);
+    }
+  }, []);
+
+  // --- Effect: Fetch Fresh Data on Mount ---
+  useEffect(() => {
+    const fetchFreshData = async () => {
+      if (user && (user._id || user.id)) {
+        try {
+          const userId = user._id || user.id;
+          const res = await fetch(`${BACKEND_URL}/user/${userId}`);
+          const data = await res.json();
+
+          if (data.status === 'success' && data.data) {
+            const freshUser = data.data;
+            
+            // Update local storage and user state with fresh data
+            setUser(freshUser);
+            localStorage.setItem('atlas-user', JSON.stringify(freshUser));
+            
+            // Load the fresh data into the application state
+            loadUserData(freshUser);
+            console.log('✅ User data synchronized from database');
+          }
+        } catch (err) {
+          console.error("Failed to sync user data on load:", err);
+        }
+      } else if (user) {
+        // Fallback: If user exists in local storage but we didn't fetch (offline/error),
+        // try to load what we have in the initial state (bookmarks etc might be in user object if saved there)
+        loadUserData(user);
+      }
+    };
+
+    fetchFreshData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Run once on mount
 
   // --- API Helpers ---
   const syncData = async (endpoint, body) => {
@@ -53,14 +99,7 @@ export const useBrowser = () => {
       localStorage.setItem('atlas-user', JSON.stringify(userData));
       
       // Load User Data from DB into State
-      if (userData.history) setGlobalHistory(userData.history);
-      if (userData.bookmarks) setBookmarks(userData.bookmarks);
-      if (userData.shortcuts) setShortcuts(userData.shortcuts);
-      if (userData.settings?.searchEngine) setSearchEngine(userData.settings.searchEngine);
-      if (userData.tabs && userData.tabs.length > 0) {
-        setTabs(userData.tabs);
-        setActiveTabId(userData.tabs[0].id);
-      }
+      loadUserData(userData);
     } else {
       throw new Error(data.message);
     }

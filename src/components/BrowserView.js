@@ -4,14 +4,19 @@ import '../styles/BrowserView.css';
 
 function BrowserView({ url, onNavigate, zoom = 1, user, onAuthRequest, onLogout, shortcuts, onUpdateShortcuts }) {
   const [isLoading, setIsLoading] = useState(false);
+  const [isReady, setIsReady] = useState(false); // Track if webview is ready
   const webviewRef = useRef(null);
 
-  // Sync Zoom Level
+  // Sync Zoom Level (Only when ready)
   useEffect(() => {
-    if (webviewRef.current) {
-      webviewRef.current.setZoomFactor(zoom);
+    if (isReady && webviewRef.current) {
+      try {
+        webviewRef.current.setZoomFactor(zoom);
+      } catch (error) {
+        console.error("Failed to set zoom factor:", error);
+      }
     }
-  }, [zoom]);
+  }, [zoom, isReady]);
 
   // Attach Event Listeners to Webview
   useEffect(() => {
@@ -25,11 +30,17 @@ function BrowserView({ url, onNavigate, zoom = 1, user, onAuthRequest, onLogout,
         console.warn("Page failed to load:", e);
         setIsLoading(false);
     };
+    
+    // Vital: Wait for dom-ready before interacting with methods like setZoomFactor
+    const handleDomReady = () => {
+      setIsReady(true);
+    };
 
     // 2. Add Listeners
     webview.addEventListener('did-start-loading', handleStartLoading);
     webview.addEventListener('did-stop-loading', handleStopLoading);
     webview.addEventListener('did-fail-load', handleFailLoad);
+    webview.addEventListener('dom-ready', handleDomReady);
 
     // 3. Cleanup
     return () => {
@@ -37,6 +48,7 @@ function BrowserView({ url, onNavigate, zoom = 1, user, onAuthRequest, onLogout,
         webview.removeEventListener('did-start-loading', handleStartLoading);
         webview.removeEventListener('did-stop-loading', handleStopLoading);
         webview.removeEventListener('did-fail-load', handleFailLoad);
+        webview.removeEventListener('dom-ready', handleDomReady);
       } catch (error) {
         // Ignore errors if webview is already disposed
       }
