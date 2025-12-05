@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Search, Lock, Star, Share2, Check } from 'lucide-react';
 import '../styles/AddressBar.css';
 
-function AddressBar({ url, onUrlChange, onUrlSubmit, isBookmarked, onToggleBookmark }) {
+function AddressBar({ url, onUrlSubmit, isBookmarked, onToggleBookmark }) {
   const [inputValue, setInputValue] = useState(url);
   const [isFocused, setIsFocused] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
@@ -14,9 +14,6 @@ function AddressBar({ url, onUrlChange, onUrlSubmit, isBookmarked, onToggleBookm
 
   const handleInputChange = (e) => {
     setInputValue(e.target.value);
-    if (onUrlChange) {
-      onUrlChange(e.target.value);
-    }
   };
 
   const handleSubmit = (e) => {

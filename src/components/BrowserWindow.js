@@ -7,7 +7,7 @@ import HistoryModal from './HistoryModal';
 import SettingsModal from './SettingsModal';
 import AuthModal from './AuthModal';
 import { 
-  Mail, Youtube, Map, MoreHorizontal, 
+  MoreHorizontal, 
   ExternalLink, Clock, Settings, Plus, Star,
   ZoomIn, ZoomOut, RotateCcw
 } from 'lucide-react';
@@ -75,7 +75,6 @@ function BrowserWindow() {
         
         <AddressBar
           url={activeTab.url}
-          onUrlChange={() => {}} 
           onUrlSubmit={actions.navigate}
           isBookmarked={isCurrentBookmarked}
           onToggleBookmark={actions.toggleBookmark}

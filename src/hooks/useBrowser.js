@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import { normalizeUrl, getDisplayTitle } from '../utils/urlHelper';
 import { DEFAULT_SEARCH_ENGINE } from '../utils/constants';
 
