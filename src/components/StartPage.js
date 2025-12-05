@@ -1,30 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import { Search, Plus, Compass, X, Trash2 } from 'lucide-react';
+import React, { useState } from 'react';
+import { Search, Plus, Compass, X, Trash2, LogIn, LogOut, User } from 'lucide-react';
 import '../styles/BrowserView.css';
-
-const DEFAULT_SHORTCUTS = [
-  { id: '1', title: 'ChatGPT', url: 'https://chat.openai.com', icon: '🤖', gradient: 'gradient-1' },
-  { id: '2', title: 'DeepSeek', url: 'https://deepseek.com', icon: '🐋', gradient: 'gradient-2' },
-  { id: '3', title: 'React Docs', url: 'https://react.dev', icon: '⚛️', gradient: 'gradient-3' }
-];
 
 const GRADIENTS = ['gradient-1', 'gradient-2', 'gradient-3'];
 
-function StartPage({ onNavigate }) {
+function StartPage({ onNavigate, user, onAuthRequest, onLogout, shortcuts, onUpdateShortcuts }) {
   const [searchValue, setSearchValue] = useState('');
-  const [shortcuts, setShortcuts] = useState(() => {
-    const saved = localStorage.getItem('atlas-shortcuts');
-    return saved ? JSON.parse(saved) : DEFAULT_SHORTCUTS;
-  });
-  
-  // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newShortcut, setNewShortcut] = useState({ title: '', url: '' });
-
-  // Persist shortcuts
-  useEffect(() => {
-    localStorage.setItem('atlas-shortcuts', JSON.stringify(shortcuts));
-  }, [shortcuts]);
 
   const handleSearchSubmit = (e) => {
     if (e.key === 'Enter') {
@@ -45,26 +28,47 @@ function StartPage({ onNavigate }) {
       id: Date.now().toString(),
       title: newShortcut.title,
       url: formatUrl,
-      icon: newShortcut.title.charAt(0).toUpperCase(), // Use first letter as icon
-      gradient: GRADIENTS[Math.floor(Math.random() * GRADIENTS.length)], // Random gradient
-      isCustom: true // Flag to render letter instead of emoji if needed
+      icon: newShortcut.title.charAt(0).toUpperCase(),
+      gradient: GRADIENTS[Math.floor(Math.random() * GRADIENTS.length)],
+      isCustom: true
     };
 
-    setShortcuts([...shortcuts, shortcut]);
+    onUpdateShortcuts([...shortcuts, shortcut]);
     setNewShortcut({ title: '', url: '' });
     setIsModalOpen(false);
   };
 
   const handleDeleteShortcut = (e, id) => {
-    e.stopPropagation(); // Prevent navigation
-    setShortcuts(shortcuts.filter(s => s.id !== id));
+    e.stopPropagation();
+    onUpdateShortcuts(shortcuts.filter(s => s.id !== id));
   };
 
   return (
     <div className="browser-view start-page" role="region" aria-label="New Tab">
       <div className="sp-header">
         <div className="sp-actions" style={{ marginLeft: 'auto' }}>
-          <div className="sp-profile"><div className="sp-avatar">U</div></div>
+          {user ? (
+            <div className="sp-pill" style={{ display: 'flex', alignItems: 'center', gap: '10px', paddingRight: '4px' }}>
+               <User size={14} />
+               <span style={{ fontWeight: 600 }}>{user.username}</span>
+               <div 
+                 className="sp-avatar" 
+                 title="Logout"
+                 onClick={onLogout}
+                 style={{ width: '28px', height: '28px', fontSize: '12px', background: 'var(--danger-color)' }}
+               >
+                 <LogOut size={14} color="#fff"/>
+               </div>
+            </div>
+          ) : (
+            <button 
+              className="sp-pill" 
+              onClick={onAuthRequest}
+              style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}
+            >
+              <LogIn size={14} /> Sign In
+            </button>
+          )}
         </div>
       </div>
 
@@ -72,6 +76,7 @@ function StartPage({ onNavigate }) {
         <div className="sp-brand">
           <Compass size={64} className="sp-brand-icon" />
           <h1 className="sp-logo">ATLAS</h1>
+          {user && <p style={{color: 'var(--text-secondary)', marginTop: '-10px'}}>Welcome back, {user.username}</p>}
         </div>
 
         <div className="sp-search-wrapper">
@@ -79,7 +84,7 @@ function StartPage({ onNavigate }) {
             <Search size={20} className="sp-search-icon" />
             <input 
               type="text" 
-              placeholder="Search the web..." 
+              placeholder={`Search the web${user ? ', ' + user.username : ''}...`}
               className="sp-search-input"
               autoFocus
               value={searchValue}
@@ -124,7 +129,6 @@ function StartPage({ onNavigate }) {
       
       <div className="sp-footer"><p>Secure Browser Environment v1.0</p></div>
 
-      {/* Add Shortcut Modal */}
       {isModalOpen && (
         <div className="sp-modal-overlay" onClick={() => setIsModalOpen(false)}>
           <div className="sp-modal" onClick={e => e.stopPropagation()}>

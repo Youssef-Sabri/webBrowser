@@ -4,7 +4,8 @@ import AddressBar from './AddressBar';
 import Tabs from './Tabs';
 import BrowserView from './BrowserView';
 import HistoryModal from './HistoryModal';
-import SettingsModal from './SettingsModal'; // Added import
+import SettingsModal from './SettingsModal';
+import AuthModal from './AuthModal';
 import { 
   Mail, Youtube, Map, MoreHorizontal, 
   ExternalLink, Clock, Settings, Plus, Star,
@@ -16,17 +17,20 @@ import '../styles/Browser.css';
 function BrowserWindow() {
   const { 
     tabs, activeTab, activeTabId, globalHistory, bookmarks, isCurrentBookmarked,
-    searchEngine, setSearchEngine, // Destructure new values
+    searchEngine, setSearchEngine, 
+    user,
+    shortcuts,
     setActiveTabId, actions 
   } = useBrowser();
   
   // UI States
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
-  const [showSettings, setShowSettings] = useState(false); // Added state
+  const [showSettings, setShowSettings] = useState(false);
+  const [showAuth, setShowAuth] = useState(false);
   const menuRef = useRef(null);
 
-  // Close menu when clicking outside
+  //ZS Close menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (menuRef.current && !menuRef.current.contains(event.target)) {
@@ -103,7 +107,6 @@ function BrowserWindow() {
                   <Plus size={16} /> New Tab
                 </div>
                 
-                {/* Zoom Controls */}
                 <div className="menu-row">
                    <span className="menu-label">Zoom: {Math.round(activeTab.zoom * 100)}%</span>
                    <div className="zoom-controls">
@@ -133,25 +136,27 @@ function BrowserWindow() {
         </div>
       </div>
 
-      <div className="bookmarks-bar">
-        <BookmarkItem icon={<Mail size={14} />} label="Inbox" url="https://mail.google.com" onNavigate={actions.navigate} />
-        <BookmarkItem icon={<Youtube size={14} />} label="Videos" url="https://youtube.com" onNavigate={actions.navigate} />
-        <BookmarkItem icon={<Map size={14} />} label="Explore" url="https://maps.google.com" onNavigate={actions.navigate} />
-        
-        {bookmarks.length > 0 && <div className="bookmarks-separator"></div>}
-
-        {bookmarks.map((bookmark, index) => (
-          <div key={`${bookmark.url}-${index}`} className="bookmark-item" onClick={() => actions.navigate(bookmark.url)}>
-            <span className="bookmark-icon"><Star size={14} fill="#FFD700" color="#FFD700" /></span>
-            <span>{bookmark.title}</span>
-          </div>
-        ))}
-      </div>
+      {/* Only render bookmarks bar if there are user bookmarks */}
+      {bookmarks.length > 0 && (
+        <div className="bookmarks-bar">
+          {bookmarks.map((bookmark, index) => (
+            <div key={`${bookmark.url}-${index}`} className="bookmark-item" onClick={() => actions.navigate(bookmark.url)}>
+              <span className="bookmark-icon"><Star size={14} fill="#FFD700" color="#FFD700" /></span>
+              <span>{bookmark.title}</span>
+            </div>
+          ))}
+        </div>
+      )}
 
       <BrowserView 
         url={activeTab.url} 
         onNavigate={actions.navigate} 
         zoom={activeTab.zoom}
+        user={user}
+        onAuthRequest={() => setShowAuth(true)}
+        onLogout={actions.logout}
+        shortcuts={shortcuts}
+        onUpdateShortcuts={actions.updateShortcuts}
         key={`${activeTab.id}-${activeTab.lastRefresh}`} 
       />
 
@@ -171,15 +176,16 @@ function BrowserWindow() {
           onClose={() => setShowSettings(false)}
         />
       )}
+
+      {showAuth && (
+        <AuthModal 
+          onClose={() => setShowAuth(false)}
+          onLogin={actions.login}
+          onRegister={actions.register}
+        />
+      )}
     </div>
   );
 }
-
-const BookmarkItem = ({ icon, label, url, onNavigate }) => (
-  <div className="bookmark-item" onClick={() => onNavigate(url)}>
-    <span className="bookmark-icon">{icon}</span>
-    <span>{label}</span>
-  </div>
-);
 
 export default BrowserWindow;
