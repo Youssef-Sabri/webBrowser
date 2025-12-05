@@ -26,7 +26,7 @@ function createWindow() {
   });
 
   // Load React App (Dev or Production)
-  const startUrl = process.env.ELECTRON_START_URL || `file://${path.join(__dirname, '../build/index.html')}`;
+  const startUrl = process.env.ELECTRON_START_URL;
   mainWindow.loadURL(startUrl);
 
   mainWindow.on('closed', () => (mainWindow = null));
