@@ -53,7 +53,9 @@ A modern, React-based web browser simulation built as a comprehensive Web Progra
 4. **Start MongoDB**
    Ensure MongoDB is running on your machine or provide a cloud MongoDB URI.
 
-5. **Start the backend server** (in a separate terminal)
+
+5. **Running the Application** 
+To run the application in development mode (React + Electron + Backend):
    ```bash
    cd Backend
    node server.js
@@ -61,7 +63,7 @@ A modern, React-based web browser simulation built as a comprehensive Web Progra
 
 6. **Start the React application** (in another terminal)
    ```bash
-   npm start
+   npm run electron:dev
    ```
    The application will open at [http://localhost:3000](http://localhost:3000).
 
