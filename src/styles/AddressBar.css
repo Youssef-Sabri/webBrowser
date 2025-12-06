@@ -2,20 +2,28 @@
   flex: 1;
   display: flex;
   align-items: center;
-  background-color: var(--bg-primary); /* Darker than toolbar */
+  background-color: var(--bg-secondary);
+  /* Match context but slightly distinct */
   border: 1px solid var(--border-color);
-  border-radius: var(--border-radius-md);
-  padding: 0 14px;
-  height: 32px;
+  border-radius: 20px;
+  /* Pill shape */
+  padding: 0 16px;
+  height: 38px;
   transition: all 0.2s ease;
   max-width: 800px;
   margin: 0 auto;
+  position: relative;
+}
+
+.address-bar:hover {
+  border-color: var(--text-secondary);
+  background-color: var(--bg-tertiary);
 }
 
 .address-bar.focused {
-  background-color: var(--bg-secondary);
+  background-color: var(--bg-primary);
   border-color: var(--accent-color);
-  box-shadow: 0 0 0 3px var(--accent-dim);
+  box-shadow: 0 0 0 2px var(--accent-dim);
 }
 
 .address-bar-icon {

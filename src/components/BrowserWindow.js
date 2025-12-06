@@ -7,18 +7,22 @@ import HistoryModal from './HistoryModal';
 import SettingsModal from './SettingsModal';
 import AuthModal from './AuthModal';
 import BrowserMenu from './BrowserMenu';
+import WindowControls from './WindowControls';
 import { ExternalLink, Star } from 'lucide-react';
-import { useBrowser } from '../hooks/useBrowser';
+import { useAuth } from '../contexts/AuthContext';
+import { useBrowserContext } from '../contexts/BrowserContext';
 import '../styles/Browser.css';
 
 function BrowserWindow() {
+  const { user, login, register, logout } = useAuth();
   const {
     tabs, activeTab, activeTabId, globalHistory, bookmarks, isCurrentBookmarked,
     searchEngine, setSearchEngine,
-    user,
     shortcuts,
-    setActiveTabId, actions
-  } = useBrowser();
+    setActiveTabId, actions: browserActions
+  } = useBrowserContext();
+
+  const actions = { ...browserActions, login, register, logout };
 
   // UI States
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -43,13 +47,23 @@ function BrowserWindow() {
 
   return (
     <div className="browser-window">
-      <Tabs
-        tabs={tabs}
-        activeTabId={activeTabId}
-        onTabChange={setActiveTabId}
-        onTabClose={actions.closeTab}
-        onAddTab={actions.addTab}
-      />
+      <div className="titlebar" style={{
+        display: 'flex',
+        alignItems: 'stretch',
+        background: 'var(--bg-secondary)',
+        WebkitAppRegion: 'drag'
+      }}>
+        <div style={{ flex: 1, minWidth: 0, WebkitAppRegion: 'no-drag' }}>
+          <Tabs
+            tabs={tabs}
+            activeTabId={activeTabId}
+            onTabChange={setActiveTabId}
+            onTabClose={actions.closeTab}
+            onAddTab={actions.addTab}
+          />
+        </div>
+        <WindowControls />
+      </div>
 
       <div className="browser-toolbar">
         <NavigationControls

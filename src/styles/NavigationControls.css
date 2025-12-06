@@ -8,36 +8,43 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
+  width: 38px;
+  height: 38px;
   border: none;
-  border-radius: 4px;
+  border-radius: 50%;
+  /* Circular buttons */
   background-color: transparent;
-  color: var(--text-primary);
+  color: var(--text-secondary);
+  /* Subtler default */
   cursor: pointer;
-  transition: background-color 0.2s ease, transform 0.1s ease;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   padding: 0;
 }
 
-.nav-button:hover {
+.nav-button:hover:not(:disabled) {
   background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+  transform: translateY(-1px);
 }
 
-.nav-button:active {
-  transform: scale(0.95);
-  background-color: var(--border-color);
+.nav-button:active:not(:disabled) {
+  transform: scale(0.92);
+  background-color: var(--bg-elevated);
 }
 
-.nav-button:focus {
+.nav-button:focus-visible {
   outline: 2px solid var(--accent-color);
   outline-offset: 2px;
 }
 
 /* Consolidated disabled state */
 .nav-button:disabled {
-  opacity: 0.3; /* Lower opacity for clearer disabled state */
-  cursor: default; /* Remove pointer cursor */
-  pointer-events: none; /* Prevent hover effects */
+  opacity: 0.3;
+  /* Lower opacity for clearer disabled state */
+  cursor: default;
+  /* Remove pointer cursor */
+  pointer-events: none;
+  /* Prevent hover effects */
 }
 
 /* Remove hover background for disabled buttons */

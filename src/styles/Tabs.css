@@ -2,60 +2,83 @@
   display: flex;
   align-items: flex-end;
   background-color: var(--bg-secondary);
-  border-bottom: 1px solid var(--border-color);
+  /* Remove border to let active tab blend */
+  /* border-bottom: 1px solid var(--border-color); */
+  padding: 8px 8px 0 8px;
+  /* Breathing room */
   overflow-x: auto;
   overflow-y: hidden;
   scrollbar-width: thin;
-  scrollbar-color: var(--border-color) transparent;
-  min-height: 36px;
+  min-height: 48px;
+  /* Increased drag area */
 }
 
+/* Scrollbar tweaks */
 .tabs-container::-webkit-scrollbar {
-  height: 6px;
-}
-
-.tabs-container::-webkit-scrollbar-track {
-  background: transparent;
+  height: 4px;
 }
 
 .tabs-container::-webkit-scrollbar-thumb {
-  background-color: var(--border-color);
-  border-radius: 3px;
-}
-
-.tabs-container::-webkit-scrollbar-thumb:hover {
-  background-color: var(--text-secondary);
+  background-color: var(--bg-tertiary);
+  border-radius: 2px;
 }
 
 .tab {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 12px;
-  min-width: 120px;
+  gap: 10px;
+  padding: 8px 14px;
+  min-width: 140px;
   max-width: 240px;
-  background-color: var(--tab-inactive-bg);
-  border: 1px solid var(--border-color);
-  border-bottom: none;
-  border-top-left-radius: 8px;
-  border-top-right-radius: 8px;
-  margin-right: 2px;
+  height: 36px;
+  /* consistent height */
+
+  background-color: transparent;
+  color: var(--text-secondary);
+
+  border: 1px solid transparent;
+  border-radius: 8px;
+  /* Floating pill look or top-rounded */
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+
+  margin-right: 4px;
   cursor: pointer;
-  transition: background-color 0.2s ease, transform 0.1s ease;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   flex-shrink: 0;
+  font-size: 13px;
+  user-select: none;
 }
 
 .tab:hover:not(.active) {
   background-color: var(--bg-tertiary);
+  color: var(--text-primary);
 }
 
 .tab.active {
-  background-color: var(--tab-active-bg);
-  border-bottom: 1px solid var(--tab-active-bg);
-  margin-bottom: -1px;
-  z-index: 1;
-  box-shadow: var(--shadow-sm);
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  /* Make it blend with the toolbar below */
+  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.1);
+  font-weight: 500;
+
+  /* Connect to content below by covering the border/space */
+  margin-bottom: 0;
+  height: 40px;
+  /* Slightly taller to overlap bottom */
+  border-radius: 8px 8px 0 0;
+
+  /* visual separation */
+  position: relative;
+}
+
+/* Active tab pseudo-element to create smooth connection if needed, 
+   but for now just blending via bg color matches */
+
+.tab:focus {
+  outline: none;
+  background-color: var(--bg-tertiary);
 }
 
 .tab:focus {
@@ -141,7 +164,7 @@
     max-width: 180px;
     padding: 6px 10px;
   }
-  
+
   .tab-title {
     font-size: 12px;
   }
@@ -154,19 +177,18 @@
     padding: 6px 8px;
     gap: 6px;
   }
-  
+
   .tab-title {
     font-size: 11px;
   }
-  
+
   .tab-close-button {
     width: 18px;
     height: 18px;
   }
-  
+
   .tab-add-button {
     width: 32px;
     height: 32px;
   }
 }
-

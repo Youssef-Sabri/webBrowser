@@ -1,0 +1,29 @@
+.window-controls {
+  display: flex;
+  align-items: center;
+  -webkit-app-region: no-drag; /* Important: Make buttons clickable */
+  height: 100%;
+}
+
+.control-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  width: 46px;
+  height: 32px; /* Match typical titlebar height */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.control-btn:hover {
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+.control-btn.close:hover {
+  background-color: #E81123;
+  color: white;
+}
