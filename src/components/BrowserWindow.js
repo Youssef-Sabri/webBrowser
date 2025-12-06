@@ -112,7 +112,7 @@ function BrowserWindow() {
         onLogout={actions.logout}
         shortcuts={shortcuts}
         onUpdateShortcuts={actions.updateShortcuts}
-        key={`${activeTab.id}-${activeTab.lastRefresh}`}
+        key={`${activeTab.id}-${activeTab.lastRefresh}-${!!activeTab.url}`}
       />
 
       {showHistory && (

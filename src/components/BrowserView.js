@@ -105,35 +105,35 @@ function BrowserView({ url, onNavigate, zoom = 1, user, onAuthRequest, onLogout,
   if (isStartPage) {
     return <StartPage 
       onNavigate={onNavigate} 
-      user={user} 
-      onAuthRequest={onAuthRequest} 
-      onLogout={onLogout}
-      shortcuts={shortcuts}
-      onUpdateShortcuts={onUpdateShortcuts}
-    />;
-  }
+        user = { user } 
+        onAuthRequest = { onAuthRequest } 
+        onLogout = { onLogout }
+        shortcuts = { shortcuts }
+        onUpdateShortcuts = { onUpdateShortcuts }
+          />;
+      }
 
   return (
-    <div className="browser-view" role="region" aria-label="Browser content">
-      <div className="browser-view-content" style={{ overflow: 'hidden', position: 'relative', height: '100%' }}>
-        <webview
-          ref={webviewRef}
-          src={srcUrl} 
-          style={{ width: '100%', height: '100%', display: 'flex' }}
-          allowpopups="true"
-          useragent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
-          webpreferences="contextIsolation=yes, nodeIntegration=no"
-        />
+        <div className="browser-view" role="region" aria-label="Browser content">
+          <div className="browser-view-content" style={{ overflow: 'hidden', position: 'relative', height: '100%' }}>
+            <webview
+              ref={webviewRef}
+              src={srcUrl} 
+              style={{ width: '100%', height: '100%', display: 'flex' }}
+              allowpopups="true"
+              useragent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
+              webpreferences="contextIsolation=yes, nodeIntegration=no"
+            />
         
-        {isLoading && (
-          <div className="iframe-overlay">
-            <div className="loader"></div>
-            <p>Loading...</p>
+            {isLoading && (
+              <div className="iframe-overlay">
+                <div className="loader"></div>
+                <p>Loading...</p>
+              </div>
+            )}
           </div>
-        )}
-      </div>
-    </div>
-  );
-}
+        </div>
+      );
+    }
 
-export default BrowserView;
+    export default BrowserView;
