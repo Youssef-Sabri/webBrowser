@@ -30,8 +30,7 @@ function BrowserWindow() {
   const [showSettings, setShowSettings] = useState(false);
   const [showAuth, setShowAuth] = useState(false);
 
-  // Close menu is now handled largely by the component itself or when actions occur,
-  // but the parent still holds the state.
+
 
   const handleHome = () => {
     if (activeTab.url && activeTab.url.trim() !== '') {

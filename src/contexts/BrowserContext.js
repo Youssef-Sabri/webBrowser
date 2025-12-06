@@ -9,7 +9,6 @@ const BrowserContext = createContext(null);
 export const BrowserProvider = ({ children }) => {
     const { user } = useAuth();
 
-    // --- Browser Data State ---
     const [tabs, setTabs] = useState([
         { id: 1, title: 'New Tab', url: '', history: [''], currentIndex: 0, lastRefresh: Date.now(), zoom: 1 }
     ]);
@@ -21,7 +20,6 @@ export const BrowserProvider = ({ children }) => {
 
     const activeTab = tabs.find(t => t.id === activeTabId) || tabs[0];
 
-    // --- Default Reset ---
     const resetBrowser = useCallback(() => {
         setGlobalHistory([]);
         setBookmarks([]);
@@ -31,7 +29,6 @@ export const BrowserProvider = ({ children }) => {
         setSearchEngine(DEFAULT_SEARCH_ENGINE);
     }, []);
 
-    // --- Load Data from User ---
     useEffect(() => {
         if (user) {
             if (user.history) setGlobalHistory(user.history);
@@ -47,7 +44,6 @@ export const BrowserProvider = ({ children }) => {
         }
     }, [user, resetBrowser]);
 
-    // --- Sync Helper ---
     const syncData = useCallback(async (endpoint, body) => {
         const userId = user?._id || user?.id;
         if (!userId) return;
@@ -58,13 +54,9 @@ export const BrowserProvider = ({ children }) => {
         }
     }, [user]);
 
-    // --- Actions ---
-
     const updateActiveTab = useCallback((updates) => {
         setTabs(prevTabs => {
             const newTabs = prevTabs.map(tab => tab.id === activeTabId ? { ...tab, ...updates } : tab);
-            // Side effect in setState callback is bad, but for debounced sync we can put it in useEffect instead or keep it simple for now. 
-            // Better to just update state and let useEffect sync, but following original pattern:
             if (user) syncData('tabs', newTabs);
             return newTabs;
         });
@@ -74,7 +66,6 @@ export const BrowserProvider = ({ children }) => {
         const finalUrl = normalizeUrl(urlInput, searchEngine);
         const title = getDisplayTitle(finalUrl);
 
-        // Safety check if activeTab is missing (shouldn't happen)
         if (!activeTab) return;
 
         const newHistory = [...activeTab.history.slice(0, activeTab.currentIndex + 1), finalUrl];

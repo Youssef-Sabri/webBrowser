@@ -9,7 +9,7 @@ export const AuthProvider = ({ children }) => {
         return saved ? JSON.parse(saved) : null;
     });
 
-    // Fetch fresh user data on mount if user exists
+    // Fetch fresh user data on mount
     useEffect(() => {
         const fetchUser = async () => {
             if (user && (user._id || user.id)) {
