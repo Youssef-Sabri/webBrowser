@@ -1,9 +1,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { normalizeUrl, getDisplayTitle } from '../utils/urlHelper';
 import { DEFAULT_SEARCH_ENGINE } from '../utils/constants';
-
-// Use environment variable for the backend API URL
-const BACKEND_URL = process.env.REACT_APP_API_URL;
+import { api } from '../services/api';
 
 export const useBrowser = () => {
   // --- Auth State ---
@@ -39,11 +37,10 @@ export const useBrowser = () => {
   // --- Effect: Fetch Fresh Data on Mount ---
   useEffect(() => {
     const fetchFreshData = async () => {
-      if (user && (user._id || user.id)) {
+      const userId = user?._id || user?.id;
+      if (userId) {
         try {
-          const userId = user._id || user.id;
-          const res = await fetch(`${BACKEND_URL}/user/${userId}`);
-          const data = await res.json();
+          const data = await api.getUser(userId);
 
           if (data.status === 'success' && data.data) {
             const freshUser = data.data;
@@ -61,7 +58,6 @@ export const useBrowser = () => {
         }
       } else if (user) {
         // Fallback: If user exists in local storage but we didn't fetch (offline/error),
-        // try to load what we have in the initial state (bookmarks etc might be in user object if saved there)
         loadUserData(user);
       }
     };
@@ -72,13 +68,17 @@ export const useBrowser = () => {
 
   // --- API Helpers ---
   const syncData = async (endpoint, body) => {
-    if (!user) return;
+    const userId = user?._id || user?.id;
+    if (!userId) return;
     try {
-      await fetch(`${BACKEND_URL}/user/${user._id || user.id}/${endpoint}`, {
-        method: endpoint === 'history' ? 'DELETE' : 'POST', // Handle special case for clear history
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body)
-      });
+      if (endpoint === 'history') {
+         // This is a special case handled in navigate/clearHistory, 
+         // but if called generically we default to generic update unless it's a clear
+         // Logic here kept for compatibility if needed, but specific methods below are better.
+         // Actually, let's just use the generic update for 'shortcuts', 'bookmarks', 'tabs', 'settings'
+      } else {
+         await api.sync.update(userId, endpoint, body);
+      }
     } catch (err) {
       console.error(`Failed to sync ${endpoint}:`, err);
     }
@@ -86,40 +86,35 @@ export const useBrowser = () => {
 
   // --- Auth Actions ---
   const login = async (username, password) => {
-    const res = await fetch(`${BACKEND_URL}/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password })
-    });
-    const data = await res.json();
-    
-    if (data.status === 'success') {
-      const userData = data.user;
-      setUser(userData);
-      localStorage.setItem('atlas-user', JSON.stringify(userData));
+    try {
+      const data = await api.login(username, password);
       
-      // Load User Data from DB into State
-      loadUserData(userData);
-    } else {
-      throw new Error(data.message);
+      if (data.status === 'success') {
+        const userData = data.user;
+        setUser(userData);
+        localStorage.setItem('atlas-user', JSON.stringify(userData));
+        loadUserData(userData);
+      } else {
+        throw new Error(data.message);
+      }
+    } catch (error) {
+      throw error;
     }
   };
 
   const register = async (username, password, email) => {
-    const res = await fetch(`${BACKEND_URL}/register`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password, email })
-    });
-    const data = await res.json();
-    if (data.status === 'success') {
-      const userData = data.user;
-      setUser(userData);
-      localStorage.setItem('atlas-user', JSON.stringify(userData));
-      // Initialize with empty shortcuts as per clean state requirement
-      setShortcuts(userData.shortcuts || []);
-    } else {
-      throw new Error(data.message);
+    try {
+      const data = await api.register(username, password, email);
+      if (data.status === 'success') {
+        const userData = data.user;
+        setUser(userData);
+        localStorage.setItem('atlas-user', JSON.stringify(userData));
+        setShortcuts(userData.shortcuts || []);
+      } else {
+        throw new Error(data.message);
+      }
+    } catch (error) {
+      throw error;
     }
   };
 
@@ -161,12 +156,9 @@ export const useBrowser = () => {
       setGlobalHistory(prev => [historyItem, ...prev]);
       
       // Sync History Item
-      if(user) {
-        fetch(`${BACKEND_URL}/user/${user._id || user.id}/history`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(historyItem)
-        });
+      const userId = user?._id || user?.id;
+      if(userId) {
+        api.sync.history.add(userId, historyItem).catch(err => console.error("Failed to sync history item", err));
       }
     }
   }, [activeTab, activeTabId, searchEngine, user]);
@@ -220,8 +212,9 @@ export const useBrowser = () => {
 
   const clearHistory = () => {
     setGlobalHistory([]);
-    if(user) {
-       fetch(`${BACKEND_URL}/user/${user._id || user.id}/history`, { method: 'DELETE' });
+    const userId = user?._id || user?.id;
+    if(userId) {
+       api.sync.history.clear(userId).catch(err => console.error("Failed to clear history", err));
     }
   };
 
