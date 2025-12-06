@@ -3,7 +3,7 @@ const cors = require('cors');
 const { User, Settings, Shortcut, History, Bookmark, Tab } = require('./models/db'); // Import from single file
 
 const app = express();
-const PORT = process.env.PORT ;
+const PORT = process.env.PORT;
 
 // Middleware
 app.use(cors());
@@ -13,7 +13,7 @@ app.use(express.json());
 // --- Helper: Assemble User Data ---
 async function assembleUserData(userDoc) {
   const userId = userDoc._id;
-  
+
   const [settings, shortcuts, history, bookmarks, tabs] = await Promise.all([
     Settings.findOne({ userId }),
     Shortcut.find({ userId }),
@@ -50,8 +50,8 @@ app.post('/api/register', async (req, res) => {
     await newSettings.save();
 
     res.json({ status: 'success', user: await assembleUserData(newUser) });
-  } catch (e) { 
-    res.status(500).json({ status: 'error', message: e.message }); 
+  } catch (e) {
+    res.status(500).json({ status: 'error', message: e.message });
   }
 });
 
@@ -61,11 +61,11 @@ app.post('/api/login', async (req, res) => {
   try {
     const user = await User.findOne({ username, password });
     if (!user) return res.status(401).json({ status: 'error', message: 'Invalid credentials' });
-    
+
     const fullUserData = await assembleUserData(user);
     res.json({ status: 'success', user: fullUserData });
-  } catch (e) { 
-    res.status(500).json({ status: 'error', message: e.message }); 
+  } catch (e) {
+    res.status(500).json({ status: 'error', message: e.message });
   }
 });
 
@@ -74,7 +74,7 @@ app.get('/api/user/:userId', async (req, res) => {
   try {
     const user = await User.findById(req.params.userId);
     if (!user) return res.status(404).json({ message: 'User not found' });
-    
+
     const fullUserData = await assembleUserData(user);
     res.json({ status: 'success', data: fullUserData });
   } catch (e) { res.status(500).json({ error: e.message }); }
@@ -92,18 +92,23 @@ app.post('/api/user/:userId/settings', async (req, res) => {
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-// 5. Sync: Update Shortcuts
-app.post('/api/user/:userId/shortcuts', async (req, res) => {
+// --- Helper: Generic Sync Handler (Delete many + Insert many) ---
+const syncList = async (Model, userId, items, res) => {
   try {
-    const userId = req.params.userId;
-    // Clear existing and replace with new list
-    await Shortcut.deleteMany({ userId });
-    if (req.body.length > 0) {
-      const shortcutsWithUser = req.body.map(s => ({ ...s, userId }));
-      await Shortcut.insertMany(shortcutsWithUser);
+    await Model.deleteMany({ userId });
+    if (items && items.length > 0) {
+      const itemsWithUser = items.map(item => ({ ...item, userId }));
+      await Model.insertMany(itemsWithUser);
     }
     res.json({ status: 'success' });
-  } catch (e) { res.status(500).json({ error: e.message }); }
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+};
+
+// 5. Sync: Update Shortcuts
+app.post('/api/user/:userId/shortcuts', (req, res) => {
+  syncList(Shortcut, req.params.userId, req.body, res);
 });
 
 // 6. Sync: Add History Item
@@ -124,29 +129,13 @@ app.delete('/api/user/:userId/history', async (req, res) => {
 });
 
 // 8. Sync: Update Bookmarks
-app.post('/api/user/:userId/bookmarks', async (req, res) => {
-  try {
-    const userId = req.params.userId;
-    await Bookmark.deleteMany({ userId });
-    if (req.body.length > 0) {
-      const bookmarksWithUser = req.body.map(b => ({ ...b, userId }));
-      await Bookmark.insertMany(bookmarksWithUser);
-    }
-    res.json({ status: 'success' });
-  } catch (e) { res.status(500).json({ error: e.message }); }
+app.post('/api/user/:userId/bookmarks', (req, res) => {
+  syncList(Bookmark, req.params.userId, req.body, res);
 });
 
 // 9. Sync: Update Tabs
-app.post('/api/user/:userId/tabs', async (req, res) => {
-  try {
-    const userId = req.params.userId;
-    await Tab.deleteMany({ userId });
-    if (req.body.length > 0) {
-      const tabsWithUser = req.body.map(t => ({ ...t, userId }));
-      await Tab.insertMany(tabsWithUser);
-    }
-    res.json({ status: 'success' });
-  } catch (e) { res.status(500).json({ error: e.message }); }
+app.post('/api/user/:userId/tabs', (req, res) => {
+  syncList(Tab, req.params.userId, req.body, res);
 });
 
 app.listen(PORT, () => {
