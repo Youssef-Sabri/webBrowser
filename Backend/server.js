@@ -14,23 +14,46 @@ app.use(express.json());
 async function assembleUserData(userDoc) {
   const userId = userDoc._id;
 
-  const [settings, shortcuts, history, bookmarks, tabs] = await Promise.all([
+  const [settings, shortcutsDoc, historyDoc, bookmarksDoc, tabsDoc] = await Promise.all([
     Settings.findOne({ userId }),
-    Shortcut.find({ userId }),
-    History.find({ userId }).sort({ id: -1 }),
-    Bookmark.find({ userId }),
-    Tab.find({ userId })
+    Shortcut.findOne({ userId }),
+    History.findOne({ userId }),
+    Bookmark.findOne({ userId }),
+    Tab.findOne({ userId })
   ]);
 
+  // Extract items from the new nested structure, or return empty arrays
   return {
     ...userDoc.toObject(),
     settings: settings || { searchEngine: 'https://www.google.com/search?q=' },
-    shortcuts: shortcuts || [],
-    history: history || [],
-    bookmarks: bookmarks || [],
-    tabs: tabs || []
+    shortcuts: shortcutsDoc ? shortcutsDoc.items : [],
+    history: historyDoc ? historyDoc.items.reverse() : [], // Reverse logic inlined here if needed, or keep order
+    bookmarks: bookmarksDoc ? bookmarksDoc.items : [],
+    tabs: tabsDoc ? tabsDoc.items : []
   };
 }
+
+// --- Helper: Generic Sync Handler (Update nested list) ---
+const syncList = async (Model, userId, listItems, res) => {
+  try {
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    // Update (or create) the single document for this user, replacing the 'items' array
+    await Model.findOneAndUpdate(
+      { userId },
+      {
+        userId,
+        username: user.username, // keep username synced for readability
+        items: listItems
+      },
+      { upsert: true, new: true }
+    );
+    res.json({ status: 'success' });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+};
 
 // --- Routes ---
 
@@ -92,20 +115,6 @@ app.post('/api/user/:userId/settings', async (req, res) => {
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-// --- Helper: Generic Sync Handler (Delete many + Insert many) ---
-const syncList = async (Model, userId, items, res) => {
-  try {
-    await Model.deleteMany({ userId });
-    if (items && items.length > 0) {
-      const itemsWithUser = items.map(item => ({ ...item, userId }));
-      await Model.insertMany(itemsWithUser);
-    }
-    res.json({ status: 'success' });
-  } catch (e) {
-    res.status(500).json({ error: e.message });
-  }
-};
-
 // 5. Sync: Update Shortcuts
 app.post('/api/user/:userId/shortcuts', (req, res) => {
   syncList(Shortcut, req.params.userId, req.body, res);
@@ -114,8 +123,20 @@ app.post('/api/user/:userId/shortcuts', (req, res) => {
 // 6. Sync: Add History Item
 app.post('/api/user/:userId/history', async (req, res) => {
   try {
-    const newItem = new History({ ...req.body, userId: req.params.userId });
-    await newItem.save();
+    const userId = req.params.userId;
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    // Push new item to the 'items' array
+    await History.findOneAndUpdate(
+      { userId },
+      {
+        userId,
+        username: user.username,
+        $push: { items: { $each: [req.body], $position: 0 } } // Add to beginning of array
+      },
+      { upsert: true, new: true }
+    );
     res.json({ status: 'success' });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
@@ -123,7 +144,13 @@ app.post('/api/user/:userId/history', async (req, res) => {
 // 7. Sync: Clear History
 app.delete('/api/user/:userId/history', async (req, res) => {
   try {
-    await History.deleteMany({ userId: req.params.userId });
+    const userId = req.params.userId;
+
+    // Clear the items array
+    await History.findOneAndUpdate(
+      { userId },
+      { $set: { items: [] } }
+    );
     res.json({ status: 'success' });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });

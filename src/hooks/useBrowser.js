@@ -45,11 +45,9 @@ export const useBrowser = () => {
           if (data.status === 'success' && data.data) {
             const freshUser = data.data;
             
-            // Update local storage and user state with fresh data
             setUser(freshUser);
             localStorage.setItem('atlas-user', JSON.stringify(freshUser));
             
-            // Load the fresh data into the application state
             loadUserData(freshUser);
             console.log('✅ User data synchronized from database');
           }
@@ -63,8 +61,7 @@ export const useBrowser = () => {
     };
 
     fetchFreshData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Run once on mount
+  }, []);
 
   // --- API Helpers ---
   const syncData = async (endpoint, body) => {
@@ -72,10 +69,6 @@ export const useBrowser = () => {
     if (!userId) return;
     try {
       if (endpoint === 'history') {
-         // This is a special case handled in navigate/clearHistory, 
-         // but if called generically we default to generic update unless it's a clear
-         // Logic here kept for compatibility if needed, but specific methods below are better.
-         // Actually, let's just use the generic update for 'shortcuts', 'bookmarks', 'tabs', 'settings'
       } else {
          await api.sync.update(userId, endpoint, body);
       }

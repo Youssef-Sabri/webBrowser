@@ -28,15 +28,12 @@ function BrowserView({ url, onNavigate, zoom = 1, user, onAuthRequest, onLogout,
     }
   }, [zoom, isReady]);
 
-  // 2. Handle External Navigation (Address Bar, Back/Forward Buttons)
   useEffect(() => {
     const webview = webviewRef.current;
     if (isReady && webview && url) {
       try {
         // CRITICAL FIX 2: Wrap getURL in try-catch to prevent "WebView must be attached" errors
         const currentWebviewUrl = webview.getURL();
-        
-        // Only load if the URL is actually different (prevents reload loops)
         if (currentWebviewUrl !== url) {
           webview.loadURL(url);
         }
