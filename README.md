@@ -63,51 +63,73 @@ To run the application in development mode (React + Electron + Backend):
 ## 🛠️ Tech Stack
 
 * **Frontend:** React.js (Create React App) with Hooks for state management
+* **Desktop Wrapper:** Electron.js
 * **Backend:** Node.js with Express.js
 * **Database:** MongoDB with Mongoose ODM
 * **Styling:** CSS3 with CSS Variables & Flexbox
 * **Icons:** Lucide React
-* **State Management:** Custom React Hook (`useBrowser`) with localStorage + API sync
+* **State Management:** React Context API (`BrowserContext`) with localStorage + API sync
 * **Authentication:** Username/password-based with MongoDB persistence
 
 ## 📂 Project Structure
 
 ```
-webBrowser/
-├── Backend/
-│   ├── models/
-│   │   └── db.js                 # MongoDB schemas and models
-│   └── server.js                  # Express server and API routes
-├── public/
-│   ├── electron.js               # Electron main process
-│   ├── index.html
-│   └── manifest.json
-├── src/
-│   ├── components/
-│   │   ├── BrowserWindow.js       # Main browser container
-│   │   ├── BrowserView.js         # WebView/content area
-│   │   ├── Tabs.js                # Tab bar component
-│   │   ├── AddressBar.js          # URL input and controls
-│   │   ├── NavigationControls.js  # Back/Forward/Refresh/Home
-│   │   ├── StartPage.js           # New tab homepage
-│   │   ├── HistoryModal.js        # History viewer
-│   │   ├── SettingsModal.js       # Settings panel
-│   │   └── AuthModal.js           # Login/Register modal
-│   ├── hooks/
-│   │   └── useBrowser.js          # Central state management hook
-│   ├── styles/
-│   │   ├── Browser.css            # Theme and modal styles
-│   │   ├── BrowserView.css        # Start page and content styles
-│   │   ├── AddressBar.css
-│   │   ├── NavigationControls.css
-│   │   └── Tabs.css
-│   ├── utils/
-│   │   ├── urlHelper.js           # URL normalization and title extraction
-│   │   └── constants.js           # Search engine definitions
-│   ├── App.js
-│   └── index.js
-├── package.json
-└── README.md
+webProject/
+├── webBrowser/
+│   ├── Backend/
+│   │   ├── controllers/
+│   │   │   ├── authController.js     # Login/Register logic
+│   │   │   ├── syncController.js     # Data synchronization logic
+│   │   │   └── userController.js     # User data retrieval
+│   │   ├── models/
+│   │   │   └── db.js                 # Mongoose schemas (User, History, etc.)
+│   │   ├── routes/
+│   │   │   ├── authRoutes.js         # Auth endpoints
+│   │   │   └── userRoutes.js         # User data endpoints
+│   │   ├── utils/
+│   │   │   └── helpers.js            # Data formatting helpers
+│   │   ├── server.js                 # Express server entry point
+│   │   └── .env                      # Backend environment variables
+│   ├── public/
+│   │   ├── electron.js               # Electron main process
+│   │   ├── preload.js                # Electron preload script
+│   │   ├── manifest.json             # Web app manifest
+│   │   ├── index.html                # React entry HTML
+│   │   └── robots.txt
+│   ├── src/
+│   │   ├── components/
+│   │   │   ├── AddressBar.js         # URL input & search
+│   │   │   ├── AuthModal.js          # Authentication popup
+│   │   │   ├── BrowserMenu.js        # Main menu dropdown
+│   │   │   ├── BrowserView.js        # WebView wrapper component
+│   │   │   ├── BrowserWindow.js      # Main app layout
+│   │   │   ├── HistoryModal.js       # History viewer
+│   │   │   ├── Modal.js              # Reusable modal wrapper
+│   │   │   ├── NavigationControls.js # Back/Forward/Refresh buttons
+│   │   │   ├── SettingsModal.js      # Search engine options
+│   │   │   ├── StartPage.js          # New tab dashboard
+│   │   │   ├── Tabs.js               # Tab management bar
+│   │   │   └── WindowControls.js     # Min/Max/Close buttons (Win/Linux)
+│   │   ├── contexts/
+│   │   │   ├── AuthContext.js        # User auth state provider
+│   │   │   └── BrowserContext.js     # Browser state (Tabs, history) provider
+│   │   ├── services/
+│   │   │   └── api.js                # Centralized API service
+│   │   ├── styles/
+│   │   │   ├── AddressBar.css
+│   │   │   ├── Browser.css           # Global theme & layout
+│   │   │   ├── BrowserView.css
+│   │   │   ├── NavigationControls.css
+│   │   │   ├── Tabs.css
+│   │   │   └── WindowControls.css
+│   │   ├── utils/
+│   │   │   ├── constants.js          # Configuration (Search engines)
+│   │   │   └── urlHelper.js          # URL processing logic
+│   │   ├── App.js                    # Root React component
+│   │   ├── index.js                  # React entry point
+│   │   └── index.css                 # Global styles
+│   ├── package.json
+│   └── README.md
 ```
 
 ## 🗄️ Database Schema
@@ -141,14 +163,14 @@ The "Midnight Matte" theme uses CSS variables defined in `src/styles/Browser.css
 
 ```css
 :root {
-  --bg-primary: #121212;
-  --bg-secondary: #1E1E1E;
-  --bg-tertiary: #2D2D2D;
-  --border-color: #333333;
-  --text-primary: #E0E0E0;
-  --text-secondary: #A0A0A0;
-  --accent-color: #00E5FF;
-  /* ... more variables ... */
+  /* Modern Dark Palette (Zinc-inspired) */
+  --bg-primary: #09090b;   /* Deepest black */
+  --bg-secondary: #18181b; /* Sidebar/Toolbar */
+  --bg-tertiary: #27272a;  /* Hover states */
+  --border-color: #3f3f46;
+  --text-primary: #fafafa;
+  --text-secondary: #a1a1aa;
+  --accent-color: #38bdf8;
 }
 ```
 
