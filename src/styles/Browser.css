@@ -4,13 +4,13 @@
 :root {
   /* Modern Dark Palette (Zinc-inspired) */
   --bg-primary: #09090b;
-  /* Deepest black for content */
+
   --bg-secondary: #18181b;
-  /* Sidebar/Toolbar/Tabs */
+
   --bg-tertiary: #27272a;
-  /* Hover states */
+
   --bg-elevated: #3f3f46;
-  /* Modals/Dropdowns */
+
 
   --border-color: #3f3f46;
 
@@ -27,7 +27,7 @@
 
   /* Metrics */
   --nav-height: 44px;
-  /* Slightly more compact */
+
   --tab-height: 38px;
   --border-radius-sm: 6px;
   --border-radius-md: 8px;
@@ -39,7 +39,7 @@
   /* Tab Colors */
   --tab-inactive-bg: transparent;
   --tab-active-bg: var(--bg-primary);
-  /* Seamless blend */
+
 }
 
 .browser-window {
@@ -293,7 +293,7 @@
   height: 34px;
 }
 
-/* ... rest of existing bookmarks css ... */
+
 .bookmark-item {
   display: flex;
   align-items: center;

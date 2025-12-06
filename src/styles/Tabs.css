@@ -2,15 +2,14 @@
   display: flex;
   align-items: flex-end;
   background-color: var(--bg-secondary);
-  /* Remove border to let active tab blend */
-  /* border-bottom: 1px solid var(--border-color); */
+
   padding: 8px 8px 0 8px;
-  /* Breathing room */
+
   overflow-x: auto;
   overflow-y: hidden;
   scrollbar-width: thin;
   min-height: 48px;
-  /* Increased drag area */
+
 }
 
 /* Scrollbar tweaks */
@@ -31,14 +30,14 @@
   min-width: 140px;
   max-width: 240px;
   height: 36px;
-  /* consistent height */
+
 
   background-color: transparent;
   color: var(--text-secondary);
 
   border: 1px solid transparent;
   border-radius: 8px;
-  /* Floating pill look or top-rounded */
+
   border-bottom-left-radius: 0;
   border-bottom-right-radius: 0;
 
@@ -59,22 +58,21 @@
 .tab.active {
   background-color: var(--bg-primary);
   color: var(--text-primary);
-  /* Make it blend with the toolbar below */
+
   box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.1);
   font-weight: 500;
 
-  /* Connect to content below by covering the border/space */
+
   margin-bottom: 0;
   height: 40px;
-  /* Slightly taller to overlap bottom */
+
   border-radius: 8px 8px 0 0;
 
-  /* visual separation */
+
   position: relative;
 }
 
-/* Active tab pseudo-element to create smooth connection if needed, 
-   but for now just blending via bg color matches */
+
 
 .tab:focus {
   outline: none;

@@ -73,7 +73,6 @@ function BrowserView({ url, onNavigate, zoom = 1, user, onAuthRequest, onLogout,
       }
     };
 
-    // Add listeners
     webview.addEventListener('did-start-loading', handleStartLoading);
     webview.addEventListener('did-stop-loading', handleStopLoading);
     webview.addEventListener('did-fail-load', handleFailLoad);
@@ -83,7 +82,7 @@ function BrowserView({ url, onNavigate, zoom = 1, user, onAuthRequest, onLogout,
     webview.addEventListener('did-navigate', handleNavigate);
     webview.addEventListener('did-navigate-in-page', handleNavigate);
 
-    // Cleanup
+
     return () => {
       try {
         webview.removeEventListener('did-start-loading', handleStartLoading);

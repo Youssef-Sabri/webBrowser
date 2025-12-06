@@ -13,7 +13,7 @@ async function assembleUserData(userDoc) {
 
     return {
         ...userDoc.toObject(),
-        settings: settings || { searchEngine: 'https://www.google.com/search?q=' },
+        settings: settings || { searchEngine: 'https://www.google.com/search?hl=en&q=' },
         shortcuts: shortcutsDoc ? shortcutsDoc.items : [],
         history: historyDoc ? historyDoc.items.reverse() : [],
         bookmarks: bookmarksDoc ? bookmarksDoc.items : [],

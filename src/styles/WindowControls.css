@@ -1,7 +1,8 @@
 .window-controls {
   display: flex;
   align-items: center;
-  -webkit-app-region: no-drag; /* Important: Make buttons clickable */
+  -webkit-app-region: no-drag;
+  /* Important: Make buttons clickable */
   height: 100%;
 }
 
@@ -10,7 +11,7 @@
   border: none;
   color: var(--text-secondary);
   width: 46px;
-  height: 32px; /* Match typical titlebar height */
+  height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;

@@ -104,7 +104,6 @@ function BrowserWindow() {
         </div>
       </div>
 
-      {/* Only render bookmarks bar if there are user bookmarks */}
       {bookmarks.length > 0 && (
         <div className="bookmarks-bar">
           {bookmarks.map((bookmark, index) => (

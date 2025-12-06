@@ -1,7 +1,6 @@
-// src/components/SettingsModal.js
 import React from 'react';
 import { Settings, Search } from 'lucide-react';
-import { SEARCH_ENGINES } from '../utils/constants'; // Import from constants
+import { SEARCH_ENGINES } from '../utils/constants';
 import Modal from './Modal';
 import '../styles/Browser.css';
 

@@ -12,10 +12,9 @@
   height: 38px;
   border: none;
   border-radius: 50%;
-  /* Circular buttons */
+
   background-color: transparent;
   color: var(--text-secondary);
-  /* Subtler default */
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   padding: 0;
@@ -40,11 +39,8 @@
 /* Consolidated disabled state */
 .nav-button:disabled {
   opacity: 0.3;
-  /* Lower opacity for clearer disabled state */
   cursor: default;
-  /* Remove pointer cursor */
   pointer-events: none;
-  /* Prevent hover effects */
 }
 
 /* Remove hover background for disabled buttons */

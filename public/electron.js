@@ -7,7 +7,6 @@ let mainWindow;
 let serverProcess;
 
 function createServer() {
-  // Spawn the backend/server.js as a child process
   const serverPath = path.join(__dirname, '../Backend/server.js');
   serverProcess = fork(serverPath);
 
@@ -18,16 +17,15 @@ function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1200,
     height: 800,
-    frame: false, // Custom frame for your browser UI
+    frame: false,
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
       preload: path.join(__dirname, 'preload.js'),
-      webviewTag: true, // IMPORTANT: Enables the Chromium render engine
+      webviewTag: true,
     },
   });
 
-  // Load React App (Dev or Production)
   const startUrl = process.env.ELECTRON_START_URL;
   mainWindow.loadURL(startUrl);
 
@@ -55,11 +53,10 @@ ipcMain.on('window-close', () => {
 });
 
 app.on('ready', () => {
-  createServer(); // Start backend
-  createWindow(); // Start UI
+  createServer();
+  createWindow();
 });
 
-// Kill backend when app closes
 app.on('before-quit', () => {
   if (serverProcess) {
     serverProcess.kill();

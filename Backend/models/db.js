@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 require('dotenv').config();
 
 // --- MongoDB Connection ---
-const MONGO_URI = process.env.MONGO_URI ;
+const MONGO_URI = process.env.MONGO_URI;
 
 mongoose.connect(MONGO_URI)
   .then(() => console.log('✅ Connected to MongoDB'))
@@ -20,7 +20,7 @@ const User = mongoose.model('User', userSchema);
 // --- 2. Settings Model ---
 const settingsSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, unique: true },
-  searchEngine: { type: String, default: 'https://www.google.com/search?q=' }
+  searchEngine: { type: String, default: 'https://www.google.com/search?hl=en&q=' }
 });
 const Settings = mongoose.model('Settings', settingsSchema);
 
