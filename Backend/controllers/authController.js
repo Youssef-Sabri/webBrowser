@@ -4,8 +4,11 @@ const { assembleUserData } = require('../utils/helpers');
 exports.register = async (req, res) => {
     const { username, password, email } = req.body;
     try {
-        const existing = await User.findOne({ username });
-        if (existing) return res.status(400).json({ status: 'error', message: 'Username taken' });
+        const existing = await User.findOne({ $or: [{ username }, { email }] });
+        if (existing) {
+             if (existing.username === username) return res.status(400).json({ status: 'error', message: 'Username taken' });
+             if (existing.email === email) return res.status(400).json({ status: 'error', message: 'Email already registered' });
+        }
 
         const newUser = new User({ username, password, email });
         await newUser.save();
