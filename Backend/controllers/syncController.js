@@ -73,3 +73,17 @@ exports.clearHistory = async (req, res) => {
         res.json({ status: 'success' });
     } catch (e) { res.status(500).json({ error: e.message }); }
 };
+
+exports.deleteHistoryItem = async (req, res) => {
+    try {
+        const { userId, itemId } = req.params;
+        // Parse itemId to number since our schema uses Number for id
+        const idNum = Number(itemId);
+
+        await History.findOneAndUpdate(
+            { userId },
+            { $pull: { items: { id: idNum } } }
+        );
+        res.json({ status: 'success' });
+    } catch (e) { res.status(500).json({ error: e.message }); }
+};

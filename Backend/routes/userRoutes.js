@@ -15,5 +15,6 @@ router.post('/:userId/tabs', syncController.syncTabs);
 // History specific
 router.post('/:userId/history', syncController.addHistory);
 router.delete('/:userId/history', syncController.clearHistory);
+router.delete('/:userId/history/:itemId', syncController.deleteHistoryItem);
 
 module.exports = router;

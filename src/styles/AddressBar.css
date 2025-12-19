@@ -1,37 +1,48 @@
+/* Address Bar Container */
 .address-bar {
   flex: 1;
   display: flex;
   align-items: center;
   background-color: var(--bg-secondary);
-
+  /* Darker default */
   border: 1px solid var(--border-color);
-  border-radius: 20px;
-
+  border-radius: var(--border-radius-lg);
+  /* More rounded */
   padding: 0 16px;
   height: 38px;
-  transition: all 0.2s ease;
+  transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
   max-width: 800px;
   margin: 0 auto;
   position: relative;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+  /* Inner shadow depth */
 }
 
-.address-bar:hover {
-  border-color: var(--text-secondary);
+.address-bar:hover:not(.focused) {
   background-color: var(--bg-tertiary);
+  /* Lighter on hover */
+  border-color: var(--text-secondary);
 }
 
 .address-bar.focused {
   background-color: var(--bg-primary);
+  /* Deep black on focus */
   border-color: var(--accent-color);
   box-shadow: 0 0 0 2px var(--accent-dim);
+  /* Focus ring */
 }
 
 .address-bar-icon {
   display: flex;
   align-items: center;
   color: var(--text-secondary);
-  margin-right: 10px;
+  margin-right: 12px;
   flex-shrink: 0;
+  transition: color 0.2s;
+}
+
+.address-bar.focused .address-bar-icon {
+  color: var(--accent-color);
 }
 
 .address-bar-input {
@@ -39,16 +50,16 @@
   border: none;
   background: transparent;
   color: var(--text-primary);
-  font-size: 13px;
+  font-size: 14px;
   font-family: inherit;
   outline: none;
   min-width: 0;
-  letter-spacing: 0.3px;
+  letter-spacing: 0.2px;
 }
 
 .address-bar-input::placeholder {
   color: var(--text-secondary);
-  opacity: 0.6;
+  opacity: 0.5;
 }
 
 /* Responsive design */
@@ -56,5 +67,7 @@
   .address-bar {
     min-width: 0;
     margin: 0 8px;
+    height: 36px;
+    font-size: 13px;
   }
 }

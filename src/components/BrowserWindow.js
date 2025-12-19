@@ -133,6 +133,7 @@ function BrowserWindow() {
           onClose={() => setShowHistory(false)}
           onClear={actions.clearHistory}
           onNavigate={actions.navigate}
+          onDelete={actions.deleteHistoryItem}
         />
       )}
 

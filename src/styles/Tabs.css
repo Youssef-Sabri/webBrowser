@@ -1,15 +1,14 @@
+/* Tabs Container */
 .tabs-container {
   display: flex;
   align-items: flex-end;
   background-color: var(--bg-secondary);
-
   padding: 8px 8px 0 8px;
-
   overflow-x: auto;
   overflow-y: hidden;
   scrollbar-width: thin;
   min-height: 48px;
-
+  gap: 4px;
 }
 
 /* Scrollbar tweaks */
@@ -18,10 +17,11 @@
 }
 
 .tabs-container::-webkit-scrollbar-thumb {
-  background-color: var(--bg-tertiary);
+  background-color: var(--bg-elevated);
   border-radius: 2px;
 }
 
+/* Tab Item */
 .tab {
   display: flex;
   align-items: center;
@@ -30,20 +30,14 @@
   min-width: 140px;
   max-width: 240px;
   height: 36px;
-
-
   background-color: transparent;
   color: var(--text-secondary);
-
   border: 1px solid transparent;
-  border-radius: 8px;
-
-  border-bottom-left-radius: 0;
-  border-bottom-right-radius: 0;
-
-  margin-right: 4px;
+  border-top-left-radius: var(--border-radius-md);
+  border-top-right-radius: var(--border-radius-md);
+  margin-right: 0;
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
   position: relative;
   flex-shrink: 0;
   font-size: 13px;
@@ -58,31 +52,49 @@
 .tab.active {
   background-color: var(--bg-primary);
   color: var(--text-primary);
-
+  /* Subtle separator effect removed for cleaner look */
+  height: 40px;
+  /* Connects with toolbar */
+  margin-bottom: 0;
+  border-top: 1px solid var(--border-color);
+  /* Matches toolbar border logic */
+  border-left: 1px solid var(--border-color);
+  border-right: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--bg-primary);
+  /* Hides bottom border to merge */
+  z-index: 10;
   box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.1);
   font-weight: 500;
-
-
-  margin-bottom: 0;
-  height: 40px;
-
-  border-radius: 8px 8px 0 0;
-
-
-  position: relative;
 }
 
-
-
-.tab:focus {
-  outline: none;
-  background-color: var(--bg-tertiary);
+/* Add a line at bottom of container to complete the 'merging' effect */
+.tabs-container::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background-color: var(--border-color);
+  z-index: 5;
 }
 
-.tab:focus {
+/* Ensure active tab sits on top of the bottom border line */
+.tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-color: var(--bg-primary);
+  z-index: 11;
+}
+
+.tab:focus-visible {
   outline: 2px solid var(--accent-color);
   outline-offset: -2px;
-  z-index: 2;
+  z-index: 12;
 }
 
 .tab-title {
@@ -91,10 +103,11 @@
   text-overflow: ellipsis;
   white-space: nowrap;
   font-size: 13px;
-  color: var(--text-primary);
+  color: inherit;
   min-width: 0;
 }
 
+/* Close Button */
 .tab-close-button {
   display: flex;
   align-items: center;
@@ -104,27 +117,25 @@
   border: none;
   border-radius: 4px;
   background-color: transparent;
-  color: var(--text-secondary);
+  color: inherit;
+  opacity: 0.7;
   cursor: pointer;
-  transition: background-color 0.2s ease, color 0.2s ease;
+  transition: all 0.15s ease;
   padding: 0;
   flex-shrink: 0;
 }
 
 .tab-close-button:hover {
-  background-color: var(--bg-tertiary);
-  color: var(--text-primary);
+  background-color: rgba(255, 255, 255, 0.1);
+  color: var(--danger-color);
+  opacity: 1;
 }
 
 .tab-close-button:active {
   transform: scale(0.9);
 }
 
-.tab-close-button:focus {
-  outline: 2px solid var(--accent-color);
-  outline-offset: 1px;
-}
-
+/* Add Tab Button */
 .tab-add-button {
   display: flex;
   align-items: center;
@@ -132,27 +143,25 @@
   width: 36px;
   height: 36px;
   border: none;
-  border-radius: 4px;
+  border-radius: var(--border-radius-md);
   background-color: transparent;
-  color: var(--text-primary);
+  color: var(--text-secondary);
   cursor: pointer;
-  transition: background-color 0.2s ease, transform 0.1s ease;
-  margin: 0 4px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  margin-left: 4px;
   padding: 0;
   flex-shrink: 0;
+  margin-bottom: 4px;
 }
 
 .tab-add-button:hover {
   background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+  transform: translateY(-1px);
 }
 
 .tab-add-button:active {
-  transform: scale(0.95);
-}
-
-.tab-add-button:focus {
-  outline: 2px solid var(--accent-color);
-  outline-offset: 2px;
+  transform: translateY(0);
 }
 
 /* Responsive design */
@@ -161,10 +170,6 @@
     min-width: 100px;
     max-width: 180px;
     padding: 6px 10px;
-  }
-
-  .tab-title {
-    font-size: 12px;
   }
 }
 
@@ -177,12 +182,7 @@
   }
 
   .tab-title {
-    font-size: 11px;
-  }
-
-  .tab-close-button {
-    width: 18px;
-    height: 18px;
+    font-size: 12px;
   }
 
   .tab-add-button {

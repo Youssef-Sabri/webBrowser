@@ -26,7 +26,7 @@ function createWindow() {
     },
   });
 
-  const startUrl = process.env.ELECTRON_START_URL;
+  const startUrl = process.env.ELECTRON_START_URL || `file://${path.join(__dirname, '../build/index.html')}`;
   mainWindow.loadURL(startUrl);
 
   mainWindow.on('closed', () => (mainWindow = null));

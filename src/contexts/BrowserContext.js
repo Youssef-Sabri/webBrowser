@@ -141,6 +141,14 @@ export const BrowserProvider = ({ children }) => {
         }
     };
 
+    const deleteHistoryItem = (itemId) => {
+        setGlobalHistory(prev => prev.filter(item => item.id !== itemId));
+        const userId = user?._id || user?.id;
+        if (userId) {
+            api.sync.history.deleteItem(userId, itemId).catch(err => console.error("Failed to delete history item", err));
+        }
+    };
+
     const goBack = () => {
         if (activeTab && activeTab.currentIndex > 0) {
             const newIndex = activeTab.currentIndex - 1;
@@ -186,6 +194,7 @@ export const BrowserProvider = ({ children }) => {
             addTab,
             closeTab,
             clearHistory,
+            deleteHistoryItem,
             toggleBookmark,
             handleZoom,
             updateShortcuts

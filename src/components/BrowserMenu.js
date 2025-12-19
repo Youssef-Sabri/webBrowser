@@ -44,17 +44,19 @@ const BrowserMenu = ({
                     </div>
 
                     <div className="menu-row">
-                        <span className="menu-label">Zoom: {Math.round(activeTab.zoom * 100)}%</span>
-                        <div className="zoom-controls">
-                            <button className="menu-icon-btn" onClick={() => actions.handleZoom('out')} title="Zoom Out">
-                                <ZoomOut size={16} />
-                            </button>
-                            <button className="menu-icon-btn" onClick={() => actions.handleZoom('reset')} title="Reset Zoom">
-                                <RotateCcw size={14} />
-                            </button>
-                            <button className="menu-icon-btn" onClick={() => actions.handleZoom('in')} title="Zoom In">
-                                <ZoomIn size={16} />
-                            </button>
+                        <div className="zoom-controls" style={{ width: '100%', justifyContent: 'space-between', paddingLeft: '12px', paddingRight: '4px' }}>
+                            <span className="menu-label">Zoom: {Math.round(activeTab.zoom * 100)}%</span>
+                            <div style={{ display: 'flex', gap: '2px' }}>
+                                <button className="menu-icon-btn" onClick={() => actions.handleZoom('out')} title="Zoom Out">
+                                    <ZoomOut size={16} />
+                                </button>
+                                <button className="menu-icon-btn" onClick={() => actions.handleZoom('reset')} title="Reset Zoom">
+                                    <RotateCcw size={14} />
+                                </button>
+                                <button className="menu-icon-btn" onClick={() => actions.handleZoom('in')} title="Zoom In">
+                                    <ZoomIn size={16} />
+                                </button>
+                            </div>
                         </div>
                     </div>
 
