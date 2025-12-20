@@ -13,6 +13,10 @@ mongoose.connect(MONGO_URI)
   .catch(err => console.error('❌ MongoDB Connection Error:', err));
 
 app.use(cors());
+const helmet = require('helmet');
+app.use(helmet({
+  contentSecurityPolicy: false,
+}));
 app.use(express.json());
 
 const authRoutes = require('./routes/authRoutes');

@@ -1,4 +1,4 @@
-import React, { createContext, useState, useCallback, useEffect, useContext } from 'react';
+import React, { createContext, useState, useCallback, useEffect, useContext, useRef, useMemo } from 'react';
 import { useAuth } from './AuthContext';
 import { normalizeUrl, getDisplayTitle } from '../utils/urlHelper';
 import { DEFAULT_SEARCH_ENGINE } from '../utils/constants';
@@ -44,15 +44,28 @@ export const BrowserProvider = ({ children }) => {
         }
     }, [user, resetBrowser]);
 
-    const syncData = useCallback(async (endpoint, body) => {
+    const syncData = useCallback((endpoint, body) => {
         const userId = user?._id || user?.id;
         if (!userId) return;
-        try {
-            await api.sync.update(userId, endpoint, body);
-        } catch (err) {
-            console.error(`Failed to sync ${endpoint}:`, err);
-        }
+        debouncedSync(userId, endpoint, body);
     }, [user]);
+
+    const syncTimeouts = React.useRef({});
+
+    const debouncedSync = useCallback((userId, endpoint, body) => {
+        if (syncTimeouts.current[endpoint]) {
+            clearTimeout(syncTimeouts.current[endpoint]);
+        }
+
+        syncTimeouts.current[endpoint] = setTimeout(async () => {
+            try {
+                await api.sync.update(userId, endpoint, body);
+                delete syncTimeouts.current[endpoint];
+            } catch (err) {
+                console.error(`Failed to sync ${endpoint}:`, err);
+            }
+        }, 1000); // 1 second debounce
+    }, []);
 
     const updateActiveTab = useCallback((updates) => {
         setTabs(prevTabs => {
@@ -175,7 +188,7 @@ export const BrowserProvider = ({ children }) => {
         updateActiveTab({ zoom: newZoom });
     };
 
-    const value = {
+    const value = useMemo(() => ({
         tabs,
         activeTab,
         activeTabId,
@@ -199,7 +212,10 @@ export const BrowserProvider = ({ children }) => {
             handleZoom,
             updateShortcuts
         }
-    };
+    }), [
+        tabs, activeTab, activeTabId, globalHistory, bookmarks, searchEngine, shortcuts,
+        navigate, goBack, goForward, refresh, addTab, closeTab, clearHistory, deleteHistoryItem, toggleBookmark, handleZoom, updateShortcuts
+    ]);
 
     return (
         <BrowserContext.Provider value={value}>

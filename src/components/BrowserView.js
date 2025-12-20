@@ -43,7 +43,11 @@ function BrowserView({ url, onNavigate, zoom = 1, user, onAuthRequest, onLogout,
     }
   }, [url, isReady]);
 
-  // 3. Attach Event Listeners
+  const onNavigateRef = useRef(onNavigate);
+  useEffect(() => {
+    onNavigateRef.current = onNavigate;
+  }, [onNavigate]);
+
   useEffect(() => {
     const webview = webviewRef.current;
     if (!webview) return;
@@ -52,8 +56,7 @@ function BrowserView({ url, onNavigate, zoom = 1, user, onAuthRequest, onLogout,
     const handleStopLoading = () => setIsLoading(false);
 
     const handleFailLoad = (e) => {
-      // Ignore ERR_ABORTED (-3) as it often happens during legitimate rapid navigation
-      if (e.errorCode !== -3) {
+      if (e.errorCode !== -3) { // Ignore ERR_ABORTED
         console.warn("Page failed to load:", e);
       }
       setIsLoading(false);
@@ -63,25 +66,23 @@ function BrowserView({ url, onNavigate, zoom = 1, user, onAuthRequest, onLogout,
       setIsReady(true);
     };
 
-    // Capture in-page navigation (links, etc.) to update React state
     const handleNavigate = (e) => {
       const currentUrl = urlPropRef.current;
-      // If the webview navigates to a URL that is different from what React thinks,
-      // we must update React's state.
       if (e.url && e.url !== currentUrl && e.url !== 'about:blank') {
-        onNavigate(e.url);
+        // Use the ref to call the latest handler
+        if (onNavigateRef.current) {
+          onNavigateRef.current(e.url);
+        }
       }
     };
 
+    // Add listeners
     webview.addEventListener('did-start-loading', handleStartLoading);
     webview.addEventListener('did-stop-loading', handleStopLoading);
     webview.addEventListener('did-fail-load', handleFailLoad);
     webview.addEventListener('dom-ready', handleDomReady);
-
-    // Listen for both main navigation and in-page navigation (SPA links)
     webview.addEventListener('did-navigate', handleNavigate);
     webview.addEventListener('did-navigate-in-page', handleNavigate);
-
 
     return () => {
       try {
@@ -95,9 +96,9 @@ function BrowserView({ url, onNavigate, zoom = 1, user, onAuthRequest, onLogout,
         // Ignore cleanup errors
       }
     };
-    // Removed 'url' and 'zoom' from dependency array to prevent listener re-binding churn
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [onNavigate]);
+    // Empty dependency array ensures listeners are attached ONLY ONCE when the component mounts/webview ref is stable.
+    // We intentionally ignore 'url' changes here for the listeners themselves.
+  }, []);
 
   const isStartPage = !url || url.trim() === '';
 
