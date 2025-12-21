@@ -55,7 +55,13 @@ exports.addHistory = async (req, res) => {
             {
                 userId,
                 username: user.username,
-                $push: { items: { $each: [req.body], $position: 0 } }
+                $push: {
+                    items: {
+                        $each: [req.body],
+                        $position: 0,
+                        $slice: 1000 
+                    }
+                }
             },
             { upsert: true, new: true }
         );

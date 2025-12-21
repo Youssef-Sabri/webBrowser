@@ -5,6 +5,7 @@ export const cleanTitle = (text) => {
     .replace(/ - Search$/i, '')
     .replace(/ - Bing$/i, '')
     .replace(/ - Yahoo Search$/i, '')
+    .replace(/ at DuckDuckGo$/i, '')
     .replace(/\s-\s.*Search$/i, '')
     .trim();
 };
@@ -28,13 +29,10 @@ export const getQueryFromUrl = (urlStr) => {
 export const normalizeUrl = (input, searchEngineUrl) => {
   if (!input) return '';
 
-  // If it's already a URL
   if (input.startsWith('http://') || input.startsWith('https://') || input.startsWith('file://')) {
     return input;
   }
 
-  // Check for domain-like pattern (e.g., google.com, test.co.uk, localhost:3000)
-  // Simple regex: roughly checks for dots and no spaces
   const domainRegex = /^([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(:\d+)?(\/.*)?$/;
   const localhostRegex = /^localhost(:\d+)?(\/.*)?$/;
   const ipRegex = /^(\d{1,3}\.){3}\d{1,3}(:\d+)?(\/.*)?$/;
@@ -52,7 +50,6 @@ export const getDisplayTitle = (url) => {
   try {
     if (!url) return 'New Tab';
     const urlObj = new URL(url);
-    // Special display for search engines could go here, but generic hostname is fine
     return urlObj.hostname;
   } catch (error) {
     return url;

@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
-import { Search, Plus, Compass, X, Trash2, LogIn, LogOut, User, Clock, Star, Hash } from 'lucide-react';
-import HighlightText from './HighlightText';
-import useSearchSuggestions from '../hooks/useSearchSuggestions';
+import { Search, Plus, Compass, X, Trash2, LogIn, LogOut, User } from 'lucide-react';
+import SearchInput from './SearchInput';
 import '../styles/BrowserView.css';
 import '../styles/AddressBar.css';
 import '../styles/StartPage.css';
@@ -13,70 +12,7 @@ function StartPage({ onNavigate, user, onAuthRequest, onLogout, shortcuts, onUpd
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newShortcut, setNewShortcut] = useState({ title: '', url: '' });
 
-  // Suggestion State
-  const [isFocused, setIsFocused] = useState(false);
-  const [selectedIndex, setSelectedIndex] = useState(-1);
-  const { suggestions, isLoading } = useSearchSuggestions(isFocused ? searchValue : '');
 
-  const handleSearchSubmit = (e) => {
-    if (e.key === 'Enter') {
-      if (selectedIndex >= 0 && suggestions[selectedIndex]) {
-        handleSuggestionClick(suggestions[selectedIndex]);
-      } else {
-        onNavigate(searchValue);
-      }
-    } else if (e.key === 'ArrowDown') {
-      e.preventDefault();
-      setSelectedIndex(prev => (prev < suggestions.length - 1 ? prev + 1 : prev));
-    } else if (e.key === 'ArrowUp') {
-      e.preventDefault();
-      setSelectedIndex(prev => (prev > -1 ? prev - 1 : prev));
-    }
-  };
-
-  const handleSuggestionClick = (suggestion) => {
-    const value = suggestion.url || suggestion.text;
-    setSearchValue(value); // Optional: update input to match
-    onNavigate(value);
-    setIsFocused(false);
-  };
-
-  const handleAddShortcut = (e) => {
-    e.preventDefault();
-    if (!newShortcut.title || !newShortcut.url) return;
-
-    let formatUrl = newShortcut.url;
-    if (!formatUrl.startsWith('http')) {
-      formatUrl = `https://${formatUrl}`;
-    }
-
-    const shortcut = {
-      id: Date.now().toString(),
-      title: newShortcut.title,
-      url: formatUrl,
-      icon: newShortcut.title.charAt(0).toUpperCase(),
-      gradient: GRADIENTS[Math.floor(Math.random() * GRADIENTS.length)],
-      isCustom: true
-    };
-
-    onUpdateShortcuts([...shortcuts, shortcut]);
-    setNewShortcut({ title: '', url: '' });
-    setIsModalOpen(false);
-  };
-
-  const handleDeleteShortcut = (e, id) => {
-    e.stopPropagation();
-    onUpdateShortcuts(shortcuts.filter(s => s.id !== id));
-  };
-
-  const getIconForSuggestion = (type) => {
-    switch (type) {
-      case 'history': return <Clock size={14} className="suggestion-icon history" />;
-      case 'bookmark': return <Star size={14} className="suggestion-icon bookmark" />;
-      case 'shortcut': return <Hash size={14} className="suggestion-icon shortcut" />;
-      default: return <Search size={14} className="suggestion-icon search" />;
-    }
-  };
 
 
 
@@ -115,53 +51,15 @@ function StartPage({ onNavigate, user, onAuthRequest, onLogout, shortcuts, onUpd
         </div>
 
         <div className="sp-search-wrapper sp-search-container">
-          <div className={`sp-search-bar ${isFocused ? 'focused' : ''}`}>
-            <Search size={20} className="sp-search-icon" />
-            <input
-              type="text"
-              placeholder={`Search the web${user ? ', ' + user.username : ''}...`}
-              className="sp-search-input"
-              autoFocus
-              value={searchValue}
-              onChange={(e) => {
-                setSearchValue(e.target.value);
-                setSelectedIndex(-1);
-              }}
-              onKeyDown={handleSearchSubmit}
-              onFocus={() => setIsFocused(true)}
-              onBlur={() => setTimeout(() => setIsFocused(false), 200)}
-            />
-          </div>
-
-          {/* Reusing Suggestion Dropdown Styles from AddressBar EXACTLY */}
-          {isFocused && (suggestions.length > 0 || isLoading) && (
-            <div className="suggestions-dropdown sp-suggestions-dropdown">
-              {suggestions.map((item, index) => {
-                // Highlight logic (copied for safety, or we can rely on helper)
-                return (
-                  <div
-                    key={index}
-                    className={`suggestion-item ${index === selectedIndex ? 'selected' : ''}`}
-                    onClick={() => handleSuggestionClick(item)}
-                    onMouseEnter={() => setSelectedIndex(index)}
-                  >
-                    <span className="suggestion-icon-wrapper">
-                      {getIconForSuggestion(item.type)}
-                    </span>
-                    <div className="suggestion-content">
-                      <span className="suggestion-text">
-                        <HighlightText text={item.text} highlight={searchValue} highlightClass="sp-highlight-match" normalClass="sp-highlight-normal" />
-                      </span>
-                      <span className="suggestion-secondary">
-                        {item.displayUrl || item.source}
-                      </span>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-
+          <SearchInput
+            variant="large"
+            value={searchValue}
+            onChange={setSearchValue}
+            onSubmit={onNavigate}
+            placeholder={`Search the web${user ? ', ' + user.username : ''}...`}
+            autoFocus={true}
+            leftIcon={<Search size={20} />}
+          />
         </div>
 
         <div className="sp-shortcuts-grid">

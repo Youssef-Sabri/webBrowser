@@ -92,7 +92,8 @@ export const BrowserProvider = ({ children }) => {
             finalUrl = normalizeUrl(urlInput, searchEngine);
         }
 
-        const title = getDisplayTitle(finalUrl);
+        const queryFromUrl = getQueryFromUrl(finalUrl);
+        const title = queryFromUrl ? cleanTitle(queryFromUrl) : getDisplayTitle(finalUrl);
 
         if (!activeTab) return;
 
@@ -111,7 +112,7 @@ export const BrowserProvider = ({ children }) => {
         });
 
         if (finalUrl && finalUrl.trim() !== '') {
-            const historyItem = { id: Date.now(), url: finalUrl, title: cleanTitle(title), timestamp: new Date().toLocaleTimeString() };
+            const historyItem = { id: Date.now(), url: finalUrl, title: title, timestamp: new Date().toLocaleTimeString() };
             setGlobalHistory(prev => [historyItem, ...prev]);
 
             const userId = user?._id || user?.id;
@@ -143,19 +144,48 @@ export const BrowserProvider = ({ children }) => {
         }
     }, [tabs, activeTabId, user, syncData]);
 
+    // Helper to find existing bookmark by URL OR search query
+    const findBookmark = useCallback((url) => {
+        if (!url) return null;
+        
+        // Direct match
+        const exactMatch = bookmarks.find(b => b.url === url);
+        if (exactMatch) return exactMatch;
+
+        // Search query match
+        const query = getQueryFromUrl(url);
+        if (query) {
+            return bookmarks.find(b => {
+                const bQuery = getQueryFromUrl(b.url);
+                return bQuery && bQuery === query;
+            });
+        }
+        return null;
+    }, [bookmarks]);
+
+    const isCurrentBookmarked = useMemo(() => {
+        return !!findBookmark(activeTab?.url);
+    }, [activeTab, findBookmark]);
+
     const toggleBookmark = useCallback(() => {
         if (!activeTab?.url) return;
-        const isBookmarked = bookmarks.some(b => b.url === activeTab.url);
+        
+        const existingBookmark = findBookmark(activeTab.url);
         let newBookmarks;
-        if (isBookmarked) {
-            newBookmarks = bookmarks.filter(b => b.url !== activeTab.url);
+        
+        if (existingBookmark) {
+            newBookmarks = bookmarks.filter(b => b !== existingBookmark);
         } else {
-            const cleaned = cleanTitle(activeTab.title || 'Bookmark');
-            newBookmarks = [...bookmarks, { url: activeTab.url, title: cleaned }];
+            // Prefer search query as title for search/engine URLs
+            const query = getQueryFromUrl(activeTab.url);
+            const titleToUse = query ? cleanTitle(query) : cleanTitle(activeTab.title || 'Bookmark');
+            
+            newBookmarks = [...bookmarks, { url: activeTab.url, title: titleToUse }];
         }
+        
         setBookmarks(newBookmarks);
         if (user) syncData('bookmarks', newBookmarks);
-    }, [activeTab, bookmarks, user, syncData]);
+    }, [activeTab, bookmarks, user, syncData, findBookmark]);
 
     const updateShortcuts = useCallback((newShortcuts) => {
         setShortcuts(newShortcuts);
@@ -164,20 +194,35 @@ export const BrowserProvider = ({ children }) => {
 
     const updateTitle = useCallback((title) => {
         if (!activeTab || !title) return;
-        updateActiveTab({ title });
+        
+        // Prefer search query as title if it's a search URL
+        // This prevents " - Google Search" or " at DuckDuckGo" from overwriting our nice clean title
+        const query = getQueryFromUrl(activeTab.url);
+        const cleaned = query ? cleanTitle(query) : cleanTitle(title);
+        
+        updateActiveTab({ title: cleaned });
         setGlobalHistory(prev => {
             const newHistory = [...prev];
             if (newHistory.length > 0 && newHistory[0].url === activeTab.url) {
-                newHistory[0].title = title;
+                newHistory[0].title = cleaned;
             }
             return newHistory;
         });
     }, [activeTab, updateActiveTab]);
 
-    const updateSearchEngine = useCallback((url) => {
-        setSearchEngine(url);
-        if (user) syncData('settings', { searchEngine: url });
-    }, [user, syncData]);
+    const updateSearchEngine = useCallback((newEngineUrl) => {
+        setSearchEngine(newEngineUrl);
+        if (user) syncData('settings', { searchEngine: newEngineUrl });
+        if (activeTab?.url) {
+            const query = getQueryFromUrl(activeTab.url);
+            if (query) {
+                const newUrl = normalizeUrl(query, newEngineUrl);
+                if (newUrl !== activeTab.url) {
+                    updateActiveTab({ url: newUrl });
+                }
+            }
+        }
+    }, [user, syncData, activeTab, updateActiveTab]);
 
     const clearHistory = useCallback(() => {
         setGlobalHistory([]);
@@ -232,7 +277,7 @@ export const BrowserProvider = ({ children }) => {
         setSearchEngine: updateSearchEngine,
         shortcuts,
         syncError,
-        isCurrentBookmarked: bookmarks.some(b => b.url === activeTab?.url),
+        isCurrentBookmarked,
         actions: {
             navigate,
             goBack,
@@ -248,7 +293,7 @@ export const BrowserProvider = ({ children }) => {
             updateTitle
         }
     }), [
-        tabs, activeTab, activeTabId, globalHistory, bookmarks, searchEngine, shortcuts, syncError,
+        tabs, activeTab, activeTabId, globalHistory, bookmarks, searchEngine, shortcuts, syncError, isCurrentBookmarked,
         navigate, goBack, goForward, refresh, addTab, closeTab, clearHistory, deleteHistoryItem, toggleBookmark, handleZoom, updateShortcuts, updateTitle, updateSearchEngine
     ]);
 

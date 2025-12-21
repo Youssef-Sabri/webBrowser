@@ -36,7 +36,7 @@ function Tabs({ tabs, activeTabId, onTabChange, onTabClose, onAddTab }) {
               }
             }}
           >
-            <span className="tab-title">{getDisplayTitle(tab.url)}</span>
+            <span className="tab-title">{tab.title || getDisplayTitle(tab.url)}</span>
             <button
               className="tab-close-button"
               onClick={(e) => handleTabClose(tab.id, e)}

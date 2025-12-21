@@ -30,9 +30,15 @@ function BrowserView({ url, onNavigate, onTitleUpdate, zoom = 1, user, onAuthReq
     if (isReady && webview && url) {
       try {
         const currentWebviewUrl = webview.getURL();
-        if (currentWebviewUrl !== url) {
+
+        // Prevent redundant reloads if already at the requested URL
+        const normalizeForCompare = (u) => u ? u.replace(/\/$/, '') : '';
+
+        if (normalizeForCompare(currentWebviewUrl) !== normalizeForCompare(url)) {
           webview.loadURL(url).catch(e => {
-            if (e.message && e.message.includes('-3')) return;
+            // Ignore ERR_ABORTED (-3) and ERR_FAILED (-2)
+            if (e.code === -3 || e.errno === -3 || (e.message && e.message.includes('-3'))) return;
+            if (e.code === -2 || e.errno === -2 || (e.message && e.message.includes('-2'))) return;
             console.warn("webview.loadURL failed:", e);
           });
         }
@@ -50,8 +56,24 @@ function BrowserView({ url, onNavigate, onTitleUpdate, zoom = 1, user, onAuthReq
     const webview = webviewRef.current;
     if (!webview) return;
 
+    const checkTitle = () => {
+      if (webview && onTitleUpdate) {
+        try {
+          const title = webview.getTitle();
+          if (title && title.trim() !== '') {
+            onTitleUpdate(title);
+          }
+        } catch (e) {
+          // ignore
+        }
+      }
+    };
+
     const handleStartLoading = () => setIsLoading(true);
-    const handleStopLoading = () => setIsLoading(false);
+    const handleStopLoading = () => {
+      setIsLoading(false);
+      checkTitle();
+    };
 
     const handleFailLoad = (e) => {
       if (e.errorCode !== -3) {
@@ -62,6 +84,7 @@ function BrowserView({ url, onNavigate, onTitleUpdate, zoom = 1, user, onAuthReq
 
     const handleDomReady = () => {
       setIsReady(true);
+      checkTitle();
     };
 
     const handleNavigate = (e) => {

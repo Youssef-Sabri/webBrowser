@@ -28,13 +28,16 @@
   border-color: var(--accent-color);
 }
 
-.auth-input {
+/* Increased specificity to override .sp-input-group input from BrowserView.css */
+.sp-input-group .auth-input {
   background: transparent;
   border: none;
   color: var(--text-primary);
   padding: 10px;
   width: 100%;
   outline: none;
+  box-shadow: none;
+  /* Ensure no shadow */
 }
 
 .auth-submit-btn {
