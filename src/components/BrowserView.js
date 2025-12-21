@@ -76,9 +76,11 @@ function BrowserView({ url, onNavigate, onTitleUpdate, zoom = 1, user, onAuthReq
     };
 
     const handleFailLoad = (e) => {
-      if (e.errorCode !== -3) {
-        console.warn("Page failed to load:", e);
+      // Ignore ERR_ABORTED (-3) and ERR_FAILED (-2)
+      if (e.errorCode === -3 || e.errorCode === -2) {
+        return;
       }
+      console.warn("Page failed to load:", e);
       setIsLoading(false);
     };
 
