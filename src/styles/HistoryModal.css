@@ -1,0 +1,57 @@
+/* History Modal Styles */
+
+.hm-search-container {
+  padding: 16px 16px 12px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.hm-search-input-wrapper {
+  display: flex;
+  align-items: center;
+  background: var(--bg-tertiary);
+  border-radius: 6px;
+  padding: 8px 12px;
+  border: 1px solid var(--border-color);
+}
+
+.hm-search-input-wrapper:focus-within {
+  border-color: var(--accent-color);
+}
+
+.hm-search-input {
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  margin-left: 8px;
+  flex: 1;
+  outline: none;
+  font-size: 14px;
+}
+
+.hm-list {
+  margin-top: 0;
+}
+
+.hm-item-content {
+  flex: 1;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.hm-delete-btn {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  margin-left: 8px;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.hm-delete-btn:hover {
+  color: var(--danger-color);
+  background: rgba(255, 82, 82, 0.1);
+}

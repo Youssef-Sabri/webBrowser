@@ -1,0 +1,21 @@
+/* Browser Window Styles */
+
+.window-titlebar {
+    display: flex;
+    align-items: stretch;
+    background: var(--bg-secondary);
+    -webkit-app-region: drag;
+}
+
+.window-tabs-container {
+    flex: 1;
+    min-width: 0;
+    -webkit-app-region: no-drag;
+}
+
+.window-sync-error {
+    color: #ef4444;
+    margin-right: 8px;
+    display: flex;
+    align-items: center;
+}

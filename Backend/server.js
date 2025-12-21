@@ -22,6 +22,22 @@ app.use(express.json());
 const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
 
+app.get('/api/suggestions', async (req, res) => {
+  const { q, engine } = req.query;
+  if (!q) return res.json([]);
+
+  const url = `https://suggestqueries.google.com/complete/search?client=firefox&q=${encodeURIComponent(q)}`;
+
+  try {
+    const response = await fetch(url);
+    const data = await response.json();
+    res.json(data);
+  } catch (err) {
+    console.error('Proxy Error:', err);
+    res.json([]);
+  }
+});
+
 app.use('/api', authRoutes);
 app.use('/api/user', userRoutes);
 

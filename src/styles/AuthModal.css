@@ -1,0 +1,59 @@
+/* Auth Modal Styles */
+
+.auth-form {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.auth-error {
+  color: var(--danger-color);
+  font-size: 13px;
+  background: rgba(255, 82, 82, 0.1);
+  padding: 8px;
+  border-radius: 4px;
+}
+
+.auth-input-container {
+  display: flex;
+  align-items: center;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 0 12px;
+}
+
+.auth-input-container:focus-within {
+  border-color: var(--accent-color);
+}
+
+.auth-input {
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  padding: 10px;
+  width: 100%;
+  outline: none;
+}
+
+.auth-submit-btn {
+  margin-top: 8px;
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  align-items: center;
+}
+
+.auth-footer {
+  text-align: center;
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-top: 8px;
+}
+
+.auth-toggle-link {
+  color: var(--accent-color);
+  cursor: pointer;
+  font-weight: 500;
+}

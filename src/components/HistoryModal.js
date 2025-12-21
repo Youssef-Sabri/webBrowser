@@ -3,6 +3,7 @@ import React, { useState, useMemo } from 'react';
 import { Clock, Trash2 } from 'lucide-react';
 import Modal from './Modal';
 import '../styles/Browser.css';
+import '../styles/HistoryModal.css';
 
 function HistoryModal({ history, onClose, onClear, onNavigate, onDelete }) {
   const [searchQuery, setSearchQuery] = useState('');
@@ -27,46 +28,30 @@ function HistoryModal({ history, onClose, onClear, onNavigate, onDelete }) {
 
   return (
     <Modal isOpen={true} onClose={onClose} title="History" icon={Clock} footer={footer}>
-      <div className="history-search" style={{ padding: '16px 16px 12px', borderBottom: '1px solid var(--border-color)' }}>
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          background: 'var(--bg-tertiary)',
-          borderRadius: '6px',
-          padding: '8px 12px',
-          border: '1px solid var(--border-color)'
-        }}>
+      <div className="history-search hm-search-container">
+        <div className="hm-search-input-wrapper">
           <Search size={16} color="var(--text-secondary)" />
           <input
             type="text"
             placeholder="Search history..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            style={{
-              background: 'transparent',
-              border: 'none',
-              color: 'var(--text-primary)',
-              marginLeft: '8px',
-              flex: 1,
-              outline: 'none',
-              fontSize: '14px'
-            }}
+            className="hm-search-input"
           />
         </div>
       </div>
-      <div className="history-list" style={{ marginTop: '0' }}>
+      <div className="history-list hm-list">
         {filteredHistory.length === 0 ? (
           <div className="empty-state">{searchQuery ? 'No matching items found.' : 'No history yet.'}</div>
         ) : (
           filteredHistory.map((item) => (
             <div key={item.id} className="history-item">
               <div
-                className="history-content"
+                className="history-content hm-item-content"
                 onClick={() => {
                   onNavigate(item.url);
                   onClose();
                 }}
-                style={{ flex: 1, cursor: 'pointer', overflow: 'hidden' }}
               >
                 <div className="history-info">
                   <span className="history-time">{item.timestamp}</span>
@@ -75,22 +60,12 @@ function HistoryModal({ history, onClose, onClear, onNavigate, onDelete }) {
                 <div className="history-link">{item.url}</div>
               </div>
               <button
-                className="history-delete-btn"
+                className="history-delete-btn hm-delete-btn"
                 onClick={(e) => {
                   e.stopPropagation();
                   onDelete(item.id);
                 }}
                 title="Remove from history"
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  color: 'var(--text-secondary)',
-                  cursor: 'pointer',
-                  padding: '4px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  marginLeft: '8px'
-                }}
               >
                 <X size={14} />
               </button>

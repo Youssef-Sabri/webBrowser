@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import StartPage from './StartPage';
+import { DEFAULT_USER_AGENT } from '../utils/constants';
 import '../styles/BrowserView.css';
 
-function BrowserView({ url, onNavigate, zoom = 1, user, onAuthRequest, onLogout, shortcuts, onUpdateShortcuts }) {
+function BrowserView({ url, onNavigate, onTitleUpdate, zoom = 1, user, onAuthRequest, onLogout, shortcuts, onUpdateShortcuts }) {
   const [isLoading, setIsLoading] = useState(false);
   const [isReady, setIsReady] = useState(false);
 
@@ -35,7 +36,11 @@ function BrowserView({ url, onNavigate, zoom = 1, user, onAuthRequest, onLogout,
         // CRITICAL FIX 2: Wrap getURL in try-catch to prevent "WebView must be attached" errors
         const currentWebviewUrl = webview.getURL();
         if (currentWebviewUrl !== url) {
-          webview.loadURL(url);
+          webview.loadURL(url).catch(e => {
+            // Ignore ERR_ABORTED (-3) which happens on rapid navigation
+            if (e.message && e.message.includes('-3')) return;
+            console.warn("webview.loadURL failed:", e);
+          });
         }
       } catch (e) {
         // Webview might be transitioning or detached; ignore this cycle
@@ -76,6 +81,12 @@ function BrowserView({ url, onNavigate, zoom = 1, user, onAuthRequest, onLogout,
       }
     };
 
+    const handleTitleUpdate = (e) => {
+      if (onTitleUpdate && e.title) {
+        onTitleUpdate(e.title);
+      }
+    };
+
     // Add listeners
     webview.addEventListener('did-start-loading', handleStartLoading);
     webview.addEventListener('did-stop-loading', handleStopLoading);
@@ -83,6 +94,7 @@ function BrowserView({ url, onNavigate, zoom = 1, user, onAuthRequest, onLogout,
     webview.addEventListener('dom-ready', handleDomReady);
     webview.addEventListener('did-navigate', handleNavigate);
     webview.addEventListener('did-navigate-in-page', handleNavigate);
+    webview.addEventListener('page-title-updated', handleTitleUpdate);
 
     return () => {
       try {
@@ -92,13 +104,13 @@ function BrowserView({ url, onNavigate, zoom = 1, user, onAuthRequest, onLogout,
         webview.removeEventListener('dom-ready', handleDomReady);
         webview.removeEventListener('did-navigate', handleNavigate);
         webview.removeEventListener('did-navigate-in-page', handleNavigate);
+        webview.removeEventListener('page-title-updated', handleTitleUpdate);
       } catch (error) {
         // Ignore cleanup errors
       }
     };
-    // Empty dependency array ensures listeners are attached ONLY ONCE when the component mounts/webview ref is stable.
-    // We intentionally ignore 'url' changes here for the listeners themselves.
-  }, []);
+
+  }, [onTitleUpdate]);
 
   const isStartPage = !url || url.trim() === '';
 
@@ -115,13 +127,13 @@ function BrowserView({ url, onNavigate, zoom = 1, user, onAuthRequest, onLogout,
 
   return (
     <div className="browser-view" role="region" aria-label="Browser content">
-      <div className="browser-view-content" style={{ overflow: 'hidden', position: 'relative', height: '100%' }}>
+      <div className="browser-view-content">
         <webview
           ref={webviewRef}
           src={srcUrl}
-          style={{ width: '100%', height: '100%', display: 'flex' }}
+          className="browser-webview"
           allowpopups="true"
-          useragent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
+          useragent={DEFAULT_USER_AGENT}
           webpreferences="contextIsolation=yes, nodeIntegration=no"
         />
 

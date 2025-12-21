@@ -8,17 +8,18 @@ import SettingsModal from './SettingsModal';
 import AuthModal from './AuthModal';
 import BrowserMenu from './BrowserMenu';
 import WindowControls from './WindowControls';
-import { ExternalLink, Star } from 'lucide-react';
+import { ExternalLink, Star, AlertTriangle } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useBrowserContext } from '../contexts/BrowserContext';
 import '../styles/Browser.css';
+import '../styles/BrowserWindow.css';
 
 function BrowserWindow() {
   const { user, login, register, logout } = useAuth();
   const {
     tabs, activeTab, activeTabId, globalHistory, bookmarks, isCurrentBookmarked,
     searchEngine, setSearchEngine,
-    shortcuts,
+    shortcuts, syncError,
     setActiveTabId, actions: browserActions
   } = useBrowserContext();
 
@@ -46,13 +47,8 @@ function BrowserWindow() {
 
   return (
     <div className="browser-window">
-      <div className="titlebar" style={{
-        display: 'flex',
-        alignItems: 'stretch',
-        background: 'var(--bg-secondary)',
-        WebkitAppRegion: 'drag'
-      }}>
-        <div style={{ flex: 1, minWidth: 0, WebkitAppRegion: 'no-drag' }}>
+      <div className="titlebar window-titlebar">
+        <div className="window-tabs-container">
           <Tabs
             tabs={tabs}
             activeTabId={activeTabId}
@@ -82,6 +78,11 @@ function BrowserWindow() {
         />
 
         <div className="toolbar-actions">
+          {user && syncError && (
+            <div className="sync-error window-sync-error" title={syncError}>
+              <AlertTriangle size={18} />
+            </div>
+          )}
           {activeTab.url && (
             <button
               className="toolbar-btn"
@@ -124,6 +125,7 @@ function BrowserWindow() {
         onLogout={actions.logout}
         shortcuts={shortcuts}
         onUpdateShortcuts={actions.updateShortcuts}
+        onTitleUpdate={actions.updateTitle}
         key={`${activeTab.id}-${activeTab.lastRefresh}-${!!activeTab.url}`}
       />
 

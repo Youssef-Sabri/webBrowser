@@ -1,0 +1,63 @@
+/* Start Page Styles */
+
+.sp-actions-container {
+  margin-left: auto;
+}
+
+.sp-user-pill {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-right: 4px;
+}
+
+.sp-username {
+  font-weight: 600;
+}
+
+.sp-avatar-logout {
+  width: 28px;
+  height: 28px;
+  font-size: 12px;
+  background: var(--danger-color);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: transform 0.2s;
+}
+
+.sp-avatar-logout:hover {
+  transform: scale(1.05);
+}
+
+.sp-signin-btn {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sp-welcome-text {
+  color: var(--text-secondary);
+  margin-top: -10px;
+}
+
+.sp-search-container {
+  position: relative;
+}
+
+.sp-suggestions-dropdown {
+  max-height: min(300px, 35vh);
+  overflow-y: auto;
+}
+
+.sp-highlight-match {
+  font-weight: bold;
+  color: var(--text-primary);
+}
+
+.sp-highlight-normal {
+  opacity: 0.8;
+}

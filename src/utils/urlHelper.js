@@ -1,38 +1,60 @@
-// src/utils/urlHelper.js
-import { DEFAULT_SEARCH_ENGINE } from './constants';
+export const cleanTitle = (text) => {
+  if (!text) return text;
+  return text
+    .replace(/ - Google Search$/i, '')
+    .replace(/ - Search$/i, '')
+    .replace(/ - Bing$/i, '')
+    .replace(/ - Yahoo Search$/i, '')
+    .replace(/\s-\s.*Search$/i, '')
+    .trim();
+};
 
-export const normalizeUrl = (input, searchUrlBase = DEFAULT_SEARCH_ENGINE) => {
+export const getQueryFromUrl = (urlStr) => {
+  try {
+    if (!urlStr) return null;
+    const url = new URL(urlStr);
+    const hostname = url.hostname.toLowerCase();
+    const searchParams = url.searchParams;
+    if (hostname.includes('google') || hostname.includes('bing') || hostname.includes('duckduckgo') || hostname.includes('yahoo') || hostname.includes('ecosia')) {
+      const q = searchParams.get('q') || searchParams.get('query') || searchParams.get('p') || searchParams.get('term');
+      if (q) return q;
+    }
+  } catch (e) {
+    // Ignore invalid URLs
+  }
+  return null;
+};
+
+export const normalizeUrl = (input, searchEngineUrl) => {
   if (!input) return '';
-  
-  let url = input.trim();
-  if (url === '') return '';
 
-  // Check for standard protocols
-  if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('file://')) {
-    return url;
-  }
-  
-  // Handle localhost specifically
-  if (url.startsWith('localhost')) {
-    return `http://${url}`;
+  // If it's already a URL
+  if (input.startsWith('http://') || input.startsWith('https://') || input.startsWith('file://')) {
+    return input;
   }
 
-  // Basic domain detection (e.g., example.com)
-  const isDomain = url.includes('.') && !url.includes(' ');
-  if (isDomain) {
-    return `https://${url}`;
+  // Check for domain-like pattern (e.g., google.com, test.co.uk, localhost:3000)
+  // Simple regex: roughly checks for dots and no spaces
+  const domainRegex = /^([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(:\d+)?(\/.*)?$/;
+  const localhostRegex = /^localhost(:\d+)?(\/.*)?$/;
+  const ipRegex = /^(\d{1,3}\.){3}\d{1,3}(:\d+)?(\/.*)?$/;
+
+  if (domainRegex.test(input) || localhostRegex.test(input) || ipRegex.test(input)) {
+    return `https://${input}`;
   }
 
-  // Use the provided search engine URL base or the default
-  return `${searchUrlBase}${encodeURIComponent(url)}`;
+  // Otherwise treat as search query
+  const searchUrl = searchEngineUrl || 'https://www.google.com/search?q=';
+  return `${searchUrl}${encodeURIComponent(input)}`;
 };
 
 export const getDisplayTitle = (url) => {
-  if (!url || url.trim() === '') return 'New Tab';
   try {
+    if (!url) return 'New Tab';
     const urlObj = new URL(url);
-    return urlObj.hostname.replace(/^www\./, '');
-  } catch {
+    // Special display for search engines could go here, but generic hostname is fine
+    return urlObj.hostname;
+  } catch (error) {
     return url;
   }
 };

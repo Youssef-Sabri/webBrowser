@@ -301,15 +301,18 @@
   position: relative;
   height: 100%;
   background-color: #fff;
+  overflow: hidden;
   /* Web pages usually expect white background */
 }
 
-.browser-iframe {
+.browser-iframe,
+.browser-webview {
   width: 100%;
   height: 100%;
   border: none;
   background: #fff;
-  display: block;
+  display: flex !important;
+  /* Force flex as requested by webview style */
 }
 
 .iframe-overlay {

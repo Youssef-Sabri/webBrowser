@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { User, Mail, Lock, LogIn } from 'lucide-react';
 import Modal from './Modal';
 import '../styles/Browser.css';
+import '../styles/AuthModal.css';
 
 function AuthModal({ onClose, onLogin, onRegister }) {
   const [isLogin, setIsLogin] = useState(true);
@@ -26,19 +27,19 @@ function AuthModal({ onClose, onLogin, onRegister }) {
 
   return (
     <Modal isOpen={true} onClose={onClose} title={isLogin ? 'Sign In' : 'Create Account'} icon={User} width="400px">
-      <form onSubmit={handleSubmit} style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-        {error && <div style={{ color: 'var(--danger-color)', fontSize: '13px', background: 'rgba(255,82,82,0.1)', padding: '8px', borderRadius: '4px' }}>{error}</div>}
+      <form onSubmit={handleSubmit} className="auth-form">
+        {error && <div className="auth-error">{error}</div>}
 
         <div className="sp-input-group">
           <label>Username</label>
-          <div style={{ display: 'flex', alignItems: 'center', background: 'var(--bg-tertiary)', border: '1px solid var(--border-color)', borderRadius: '6px', padding: '0 12px' }}>
+          <div className="auth-input-container">
             <User size={16} color="var(--text-secondary)" />
             <input
               type="text"
               required
               value={formData.username}
               onChange={e => setFormData({ ...formData, username: e.target.value })}
-              style={{ background: 'transparent', border: 'none', color: 'var(--text-primary)', padding: '10px', width: '100%', outline: 'none' }}
+              className="auth-input"
               placeholder="Enter username"
             />
           </div>
@@ -47,14 +48,14 @@ function AuthModal({ onClose, onLogin, onRegister }) {
         {!isLogin && (
           <div className="sp-input-group">
             <label>Email</label>
-            <div style={{ display: 'flex', alignItems: 'center', background: 'var(--bg-tertiary)', border: '1px solid var(--border-color)', borderRadius: '6px', padding: '0 12px' }}>
+            <div className="auth-input-container">
               <Mail size={16} color="var(--text-secondary)" />
               <input
                 type="email"
                 required
                 value={formData.email}
                 onChange={e => setFormData({ ...formData, email: e.target.value })}
-                style={{ background: 'transparent', border: 'none', color: 'var(--text-primary)', padding: '10px', width: '100%', outline: 'none' }}
+                className="auth-input"
                 placeholder="Enter email"
               />
             </div>
@@ -63,29 +64,29 @@ function AuthModal({ onClose, onLogin, onRegister }) {
 
         <div className="sp-input-group">
           <label>Password</label>
-          <div style={{ display: 'flex', alignItems: 'center', background: 'var(--bg-tertiary)', border: '1px solid var(--border-color)', borderRadius: '6px', padding: '0 12px' }}>
+          <div className="auth-input-container">
             <Lock size={16} color="var(--text-secondary)" />
             <input
               type="password"
               required
               value={formData.password}
               onChange={e => setFormData({ ...formData, password: e.target.value })}
-              style={{ background: 'transparent', border: 'none', color: 'var(--text-primary)', padding: '10px', width: '100%', outline: 'none' }}
+              className="auth-input"
               placeholder="Enter password"
             />
           </div>
         </div>
 
-        <button type="submit" className="sp-btn-submit" style={{ marginTop: '8px', display: 'flex', justifyContent: 'center', gap: '8px', alignItems: 'center' }}>
+        <button type="submit" className="sp-btn-submit auth-submit-btn">
           <LogIn size={16} />
           {isLogin ? 'Sign In' : 'Sign Up'}
         </button>
 
-        <div style={{ textAlign: 'center', fontSize: '13px', color: 'var(--text-secondary)', marginTop: '8px' }}>
+        <div className="auth-footer">
           {isLogin ? "Don't have an account? " : "Already have an account? "}
           <span
             onClick={() => { setIsLogin(!isLogin); setError(''); }}
-            style={{ color: 'var(--accent-color)', cursor: 'pointer', fontWeight: '500' }}
+            className="auth-toggle-link"
           >
             {isLogin ? 'Sign Up' : 'Sign In'}
           </span>

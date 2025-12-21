@@ -1,6 +1,10 @@
 import React, { useState } from 'react';
-import { Search, Plus, Compass, X, Trash2, LogIn, LogOut, User } from 'lucide-react';
+import { Search, Plus, Compass, X, Trash2, LogIn, LogOut, User, Clock, Star, Hash } from 'lucide-react';
+import HighlightText from './HighlightText';
+import useSearchSuggestions from '../hooks/useSearchSuggestions';
 import '../styles/BrowserView.css';
+import '../styles/AddressBar.css';
+import '../styles/StartPage.css';
 
 const GRADIENTS = ['gradient-1', 'gradient-2', 'gradient-3'];
 
@@ -9,10 +13,32 @@ function StartPage({ onNavigate, user, onAuthRequest, onLogout, shortcuts, onUpd
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newShortcut, setNewShortcut] = useState({ title: '', url: '' });
 
+  // Suggestion State
+  const [isFocused, setIsFocused] = useState(false);
+  const [selectedIndex, setSelectedIndex] = useState(-1);
+  const { suggestions, isLoading } = useSearchSuggestions(isFocused ? searchValue : '');
+
   const handleSearchSubmit = (e) => {
     if (e.key === 'Enter') {
-      onNavigate(searchValue);
+      if (selectedIndex >= 0 && suggestions[selectedIndex]) {
+        handleSuggestionClick(suggestions[selectedIndex]);
+      } else {
+        onNavigate(searchValue);
+      }
+    } else if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setSelectedIndex(prev => (prev < suggestions.length - 1 ? prev + 1 : prev));
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setSelectedIndex(prev => (prev > -1 ? prev - 1 : prev));
     }
+  };
+
+  const handleSuggestionClick = (suggestion) => {
+    const value = suggestion.url || suggestion.text;
+    setSearchValue(value); // Optional: update input to match
+    onNavigate(value);
+    setIsFocused(false);
   };
 
   const handleAddShortcut = (e) => {
@@ -43,28 +69,37 @@ function StartPage({ onNavigate, user, onAuthRequest, onLogout, shortcuts, onUpd
     onUpdateShortcuts(shortcuts.filter(s => s.id !== id));
   };
 
+  const getIconForSuggestion = (type) => {
+    switch (type) {
+      case 'history': return <Clock size={14} className="suggestion-icon history" />;
+      case 'bookmark': return <Star size={14} className="suggestion-icon bookmark" />;
+      case 'shortcut': return <Hash size={14} className="suggestion-icon shortcut" />;
+      default: return <Search size={14} className="suggestion-icon search" />;
+    }
+  };
+
+
+
   return (
     <div className="browser-view start-page" role="region" aria-label="New Tab">
       <div className="sp-header">
-        <div className="sp-actions" style={{ marginLeft: 'auto' }}>
+        <div className="sp-actions sp-actions-container">
           {user ? (
-            <div className="sp-pill" style={{ display: 'flex', alignItems: 'center', gap: '10px', paddingRight: '4px' }}>
-               <User size={14} />
-               <span style={{ fontWeight: 600 }}>{user.username}</span>
-               <div 
-                 className="sp-avatar" 
-                 title="Logout"
-                 onClick={onLogout}
-                 style={{ width: '28px', height: '28px', fontSize: '12px', background: 'var(--danger-color)' }}
-               >
-                 <LogOut size={14} color="#fff"/>
-               </div>
+            <div className="sp-pill sp-user-pill">
+              <User size={14} />
+              <span className="sp-username">{user.username}</span>
+              <div
+                className="sp-avatar sp-avatar-logout"
+                title="Logout"
+                onClick={onLogout}
+              >
+                <LogOut size={14} color="#fff" />
+              </div>
             </div>
           ) : (
-            <button 
-              className="sp-pill" 
+            <button
+              className="sp-pill sp-signin-btn"
               onClick={onAuthRequest}
-              style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}
             >
               <LogIn size={14} /> Sign In
             </button>
@@ -76,39 +111,74 @@ function StartPage({ onNavigate, user, onAuthRequest, onLogout, shortcuts, onUpd
         <div className="sp-brand">
           <Compass size={64} className="sp-brand-icon" />
           <h1 className="sp-logo">ATLAS</h1>
-          {user && <p style={{color: 'var(--text-secondary)', marginTop: '-10px'}}>Welcome back, {user.username}</p>}
+          {user && <p className="sp-welcome-text">Welcome back, {user.username}</p>}
         </div>
 
-        <div className="sp-search-wrapper">
-          <div className="sp-search-bar">
+        <div className="sp-search-wrapper sp-search-container">
+          <div className={`sp-search-bar ${isFocused ? 'focused' : ''}`}>
             <Search size={20} className="sp-search-icon" />
-            <input 
-              type="text" 
+            <input
+              type="text"
               placeholder={`Search the web${user ? ', ' + user.username : ''}...`}
               className="sp-search-input"
               autoFocus
               value={searchValue}
-              onChange={(e) => setSearchValue(e.target.value)}
+              onChange={(e) => {
+                setSearchValue(e.target.value);
+                setSelectedIndex(-1);
+              }}
               onKeyDown={handleSearchSubmit}
+              onFocus={() => setIsFocused(true)}
+              onBlur={() => setTimeout(() => setIsFocused(false), 200)}
             />
           </div>
+
+          {/* Reusing Suggestion Dropdown Styles from AddressBar EXACTLY */}
+          {isFocused && (suggestions.length > 0 || isLoading) && (
+            <div className="suggestions-dropdown sp-suggestions-dropdown">
+              {suggestions.map((item, index) => {
+                // Highlight logic (copied for safety, or we can rely on helper)
+                return (
+                  <div
+                    key={index}
+                    className={`suggestion-item ${index === selectedIndex ? 'selected' : ''}`}
+                    onClick={() => handleSuggestionClick(item)}
+                    onMouseEnter={() => setSelectedIndex(index)}
+                  >
+                    <span className="suggestion-icon-wrapper">
+                      {getIconForSuggestion(item.type)}
+                    </span>
+                    <div className="suggestion-content">
+                      <span className="suggestion-text">
+                        <HighlightText text={item.text} highlight={searchValue} highlightClass="sp-highlight-match" normalClass="sp-highlight-normal" />
+                      </span>
+                      <span className="suggestion-secondary">
+                        {item.displayUrl || item.source}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
         </div>
 
         <div className="sp-shortcuts-grid">
           {shortcuts.map(shortcut => (
-            <div 
-              key={shortcut.id} 
-              className="sp-shortcut-card" 
+            <div
+              key={shortcut.id}
+              className="sp-shortcut-card"
               onClick={() => onNavigate(shortcut.url)}
             >
-              <button 
-                className="shortcut-delete-btn" 
+              <button
+                className="shortcut-delete-btn"
                 onClick={(e) => handleDeleteShortcut(e, shortcut.id)}
                 title="Remove shortcut"
               >
                 <Trash2 size={14} />
               </button>
-              
+
               <div className={`card-icon ${shortcut.gradient}`}>
                 {shortcut.isCustom ? (
                   <span className="icon-text">{shortcut.icon}</span>
@@ -119,14 +189,14 @@ function StartPage({ onNavigate, user, onAuthRequest, onLogout, shortcuts, onUpd
               <span className="card-label">{shortcut.title}</span>
             </div>
           ))}
-          
+
           <div className="sp-shortcut-card add-new" onClick={() => setIsModalOpen(true)}>
             <div className="card-icon"><Plus size={24} /></div>
             <span className="card-label">Add Site</span>
           </div>
         </div>
       </div>
-      
+
       <div className="sp-footer"><p>Secure Browser Environment v1.0</p></div>
 
       {isModalOpen && (
@@ -142,23 +212,23 @@ function StartPage({ onNavigate, user, onAuthRequest, onLogout, shortcuts, onUpd
               <div className="sp-modal-body">
                 <div className="sp-input-group">
                   <label>Name</label>
-                  <input 
-                    type="text" 
-                    placeholder="e.g. GitHub" 
+                  <input
+                    type="text"
+                    placeholder="e.g. GitHub"
                     value={newShortcut.title}
-                    onChange={e => setNewShortcut({...newShortcut, title: e.target.value})}
+                    onChange={e => setNewShortcut({ ...newShortcut, title: e.target.value })}
                     autoFocus
-                    required 
+                    required
                   />
                 </div>
                 <div className="sp-input-group">
                   <label>URL</label>
-                  <input 
-                    type="text" 
-                    placeholder="e.g. github.com" 
+                  <input
+                    type="text"
+                    placeholder="e.g. github.com"
                     value={newShortcut.url}
-                    onChange={e => setNewShortcut({...newShortcut, url: e.target.value})}
-                    required 
+                    onChange={e => setNewShortcut({ ...newShortcut, url: e.target.value })}
+                    required
                   />
                 </div>
               </div>
