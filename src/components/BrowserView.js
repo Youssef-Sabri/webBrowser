@@ -27,6 +27,11 @@ function BrowserView({ url, onNavigate, onTitleUpdate, zoom = 1, user, onAuthReq
 
   useEffect(() => {
     const webview = webviewRef.current;
+    
+    // Check if we are in Electron and webview is available
+    const isElectron = window.navigator.userAgent.toLowerCase().includes('electron');
+    if (!isElectron || !isReady || !webview || !url) return;
+
     if (isReady && webview && url) {
       try {
         const currentWebviewUrl = webview.getURL();
@@ -54,7 +59,9 @@ function BrowserView({ url, onNavigate, onTitleUpdate, zoom = 1, user, onAuthReq
 
   useEffect(() => {
     const webview = webviewRef.current;
-    if (!webview) return;
+    const isElectron = window.navigator.userAgent.toLowerCase().includes('electron');
+    
+    if (!webview || !isElectron) return;
 
     const checkTitle = () => {
       if (webview && onTitleUpdate) {
@@ -142,23 +149,57 @@ function BrowserView({ url, onNavigate, onTitleUpdate, zoom = 1, user, onAuthReq
     />;
   }
 
+  // Simple check for Electron environment
+  const isElectron = window.navigator.userAgent.toLowerCase().includes('electron');
+
   return (
     <div className="browser-view" role="region" aria-label="Browser content">
       <div className="browser-view-content">
-        <webview
-          ref={webviewRef}
-          src={srcUrl}
-          className="browser-webview"
-          allowpopups="true"
-          useragent={DEFAULT_USER_AGENT}
-          webpreferences="contextIsolation=yes, nodeIntegration=no"
-        />
+        {isElectron ? (
+          <webview
+            ref={webviewRef}
+            src={srcUrl}
+            className="browser-webview"
+            allowpopups="true"
+            useragent={DEFAULT_USER_AGENT}
+            webpreferences="contextIsolation=yes, nodeIntegration=no"
+          />
+        ) : (
+          <iframe
+            title="Browser Content"
+            src={srcUrl}
+            className="browser-webview"
+            sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-presentation allow-downloads"
+            onLoad={() => {
+              setIsLoading(false);
+              if (onTitleUpdate) onTitleUpdate("External Site");
+            }}
+            onError={() => setIsLoading(false)}
+          />
+        )}
 
         {isLoading && (
           <div className="iframe-overlay">
             <div className="loader"></div>
             <p>Loading...</p>
           </div>
+        )}
+        
+        {!isElectron && (
+           <div style={{
+             position: 'absolute', 
+             bottom: 0, 
+             left: 0, 
+             right: 0, 
+             background: '#f59e0b', 
+             color: '#000', 
+             textAlign: 'center', 
+             padding: '4px',
+             fontSize: '12px',
+             zIndex: 9999
+           }}>
+             ⚠️ Web Mode: Some sites (Google, YouTube) may refuse to load via iframe.
+           </div>
         )}
       </div>
     </div>
