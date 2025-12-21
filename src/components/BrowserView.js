@@ -7,10 +7,8 @@ function BrowserView({ url, onNavigate, onTitleUpdate, zoom = 1, user, onAuthReq
   const [isLoading, setIsLoading] = useState(false);
   const [isReady, setIsReady] = useState(false);
 
-  // CRITICAL FIX 1: Use a stable initial URL for the 'src' prop.
   const [srcUrl] = useState(url);
 
-  // Keep a ref to the latest URL so event handlers can access it without re-binding
   const urlPropRef = useRef(url);
   useEffect(() => {
     urlPropRef.current = url;
@@ -18,13 +16,11 @@ function BrowserView({ url, onNavigate, onTitleUpdate, zoom = 1, user, onAuthReq
 
   const webviewRef = useRef(null);
 
-  // 1. Sync Zoom Level (Safe execution)
   useEffect(() => {
     if (isReady && webviewRef.current) {
       try {
         webviewRef.current.setZoomFactor(zoom);
       } catch (error) {
-        // Silently fail if webview isn't ready
       }
     }
   }, [zoom, isReady]);
@@ -33,17 +29,14 @@ function BrowserView({ url, onNavigate, onTitleUpdate, zoom = 1, user, onAuthReq
     const webview = webviewRef.current;
     if (isReady && webview && url) {
       try {
-        // CRITICAL FIX 2: Wrap getURL in try-catch to prevent "WebView must be attached" errors
         const currentWebviewUrl = webview.getURL();
         if (currentWebviewUrl !== url) {
           webview.loadURL(url).catch(e => {
-            // Ignore ERR_ABORTED (-3) which happens on rapid navigation
             if (e.message && e.message.includes('-3')) return;
             console.warn("webview.loadURL failed:", e);
           });
         }
       } catch (e) {
-        // Webview might be transitioning or detached; ignore this cycle
       }
     }
   }, [url, isReady]);
@@ -61,7 +54,7 @@ function BrowserView({ url, onNavigate, onTitleUpdate, zoom = 1, user, onAuthReq
     const handleStopLoading = () => setIsLoading(false);
 
     const handleFailLoad = (e) => {
-      if (e.errorCode !== -3) { // Ignore ERR_ABORTED
+      if (e.errorCode !== -3) {
         console.warn("Page failed to load:", e);
       }
       setIsLoading(false);
@@ -74,7 +67,6 @@ function BrowserView({ url, onNavigate, onTitleUpdate, zoom = 1, user, onAuthReq
     const handleNavigate = (e) => {
       const currentUrl = urlPropRef.current;
       if (e.url && e.url !== currentUrl && e.url !== 'about:blank') {
-        // Use the ref to call the latest handler
         if (onNavigateRef.current) {
           onNavigateRef.current(e.url);
         }
