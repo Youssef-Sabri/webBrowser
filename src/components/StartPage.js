@@ -12,6 +12,34 @@ function StartPage({ onNavigate, user, onAuthRequest, onLogout, shortcuts, onUpd
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newShortcut, setNewShortcut] = useState({ title: '', url: '' });
 
+  const handleAddShortcut = (e) => {
+    e.preventDefault();
+    if (!newShortcut.title || !newShortcut.url) return;
+
+    let formatUrl = newShortcut.url;
+    if (!formatUrl.startsWith('http')) {
+      formatUrl = `https://${formatUrl}`;
+    }
+
+    const shortcut = {
+      id: Date.now().toString(),
+      title: newShortcut.title,
+      url: formatUrl,
+      icon: newShortcut.title.charAt(0).toUpperCase(),
+      gradient: GRADIENTS[Math.floor(Math.random() * GRADIENTS.length)],
+      isCustom: true
+    };
+
+    onUpdateShortcuts([...shortcuts, shortcut]);
+    setNewShortcut({ title: '', url: '' });
+    setIsModalOpen(false);
+  };
+
+  const handleDeleteShortcut = (e, id) => {
+    e.stopPropagation();
+    onUpdateShortcuts(shortcuts.filter(s => s.id !== id));
+  };
+
 
 
 
