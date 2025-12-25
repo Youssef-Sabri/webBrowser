@@ -41,7 +41,6 @@ function BrowserView({ url, onNavigate, onTitleUpdate, zoom = 1, user, onAuthReq
 
         if (normalizeForCompare(currentWebviewUrl) !== normalizeForCompare(url)) {
           webview.loadURL(url).catch(e => {
-            // Ignore ERR_ABORTED (-3) and ERR_FAILED (-2)
             if (e.code === -3 || e.errno === -3 || (e.message && e.message.includes('-3'))) return;
             if (e.code === -2 || e.errno === -2 || (e.message && e.message.includes('-2'))) return;
             console.warn("webview.loadURL failed:", e);

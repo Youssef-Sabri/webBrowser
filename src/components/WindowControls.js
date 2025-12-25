@@ -15,7 +15,6 @@ const WindowControls = () => {
         if (window.electron) window.electron.close();
     };
 
-    // If we are not in Electron (e.g. standard browser dev), these won't work
     if (!window.electron) return null;
 
     return (

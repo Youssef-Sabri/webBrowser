@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Search, Lock, Star, Share2, Check } from 'lucide-react';
-import SearchInput from './SearchInput'; // Shared component
+import SearchInput from './SearchInput'; 
 import '../styles/AddressBar.css';
 
 function AddressBar({ url, onUrlSubmit, isBookmarked, onToggleBookmark }) {
