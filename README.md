@@ -1,203 +1,120 @@
-# 🌍 ATLAS Browser Project
+# Atlas Browser
 
-A modern, React-based web browser simulation built as a comprehensive Web Programming project. ATLAS mimics the functionality of a real browser environment entirely within the web, featuring a robust tab system, history management, user authentication, and a custom "Midnight Matte" interface.
+**Atlas Browser** is a custom-built, modern web browser application developed using **Electron** and **React**. Unlike standard browser shells, Atlas integrates a full-stack architecture with a dedicated **Express.js** backend spawned directly alongside the application to handle user authentication, data synchronization, and persistence (History, Bookmarks, Settings) via **MongoDB**.
 
-> **Course:** CSE211 - Web Programming  
-> **Institution:** Alamein International University  
+## 🚀 Key Features
 
-## ✨ Key Features
+* **Custom Browser Engine**: Utilizes Electron's `<webview>` tag for secure, isolated web content rendering with zoom capabilities and user-agent management.
+* **Frameless UI**: A completely custom user interface with dedicated window controls (Minimize, Maximize, Close) and a sleek, modern aesthetic.
+* **User Profiles & Sync**: Built-in authentication system allowing users to log in, save, and sync their browsing data.
+* **Smart Search**: Integrated address bar featuring a custom **CORS-bypassing proxy** (`/api/suggestions`) that securely fetches real-time Google Search suggestions via the backend.
+* **Comprehensive Data Management**:
+    * **History**: Tracks and stores browsing history in a database.
+    * **Bookmarks**: Save and manage favorite sites.
+    * **Shortcuts**: Quick-access links on the Start Page.
+    * **Tabs**: Session and tab state management.
+* **Settings Persistence**: User preferences are stored and loaded upon login.
+* **Hybrid Web/Desktop Mode**: Includes fallback support for running in a standard web browser (via `iframe`) for development purposes, with detection for Electron environments.
 
-* **🖥️ Multi-Tab Interface:** Fully functional tab management allowing users to open, close, and switch between multiple browsing contexts with independent history stacks.
-* **🎨 Midnight Matte Theme:** A custom-designed, high-contrast dark theme optimized for visual comfort and professional aesthetics with CSS variables for easy customization.
-* **⏱️ History & Bookmarks:** Integrated history logging and bookmarking system with persistent cloud storage via MongoDB backend.
-* **🏠 Smart Start Page:** A personalized dashboard featuring a search bar, customizable "Speed Dial" shortcuts, and user authentication status.
-* **🔍 Omnibox Address Bar:** Validates URLs, supports search queries via configurable search engines (Google, Bing, DuckDuckGo), and provides visual security indicators.
-* **👤 User Authentication:** Secure login and registration system with MongoDB backend, allowing users to sync their data across sessions.
-* **📱 Responsive Design:** Adaptive layout that works across various screen sizes from desktop to mobile.
-* **🔧 Browser Controls:** Back/Forward navigation, refresh, home, and zoom controls (25% - 300%).
-* **⚙️ Settings Panel:** Configure default search engine and manage browser preferences.
+## 🏗 Architecture
 
-## 🚀 Getting Started
+Atlas Browser employs a unique multi-process architecture:
 
-### Prerequisites
-* Node.js (v14.0.0 or higher)
-* npm (v6.0.0 or higher)
-* MongoDB (local or cloud instance via MongoDB Atlas)
+1.  **Electron Main Process**: Manages application lifecycle and spawns the backend using `child_process.fork()`, ensuring the API server runs as a separate, non-blocking process (`PID` tracked for cleanup).
+2.  **Child Backend Process**: A standalone Node.js/Express server running on port 5000. It handles all database operations and acts as a proxy for external APIs to avoid CORS issues in the renderer.
+3.  **React Renderer**: The UI layer that communicates with the backend via REST APIs and the Main Process via a secure `ContextBridge` in `preload.js`.
+    *   **IPC Channels**: Exposes protected methods like `electron.minimize`, `electron.maximize`, and `electron.close` to the frontend without enabling full Node.js integration.
 
-### Installation
+```mermaid
+graph TD
+    A[Electron Main Process] -->|Spawns| B(Express Backend Server)
+    A -->|Loads| C[React Frontend Window]
+    B -->|Connects| D[(MongoDB Database)]
+    C -->|API Calls| B
+    C -->|IPC Events| A
+    C -->|Embeds| E[Webview / Content]
+```
 
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/Youssef-Sabri/webBrowser
-   cd webBrowser
-   ```
+## 🛠 Tech Stack
 
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
+### Frontend & Desktop
 
-3. **Configure environment variables**
-   Create a `.env` file in the root directory:
-   ```
-   REACT_APP_API_URL=http://localhost:5000/api
-   PORT=3000
-   ```
-   
-   Create a `.env` file in the `Backend/` directory:
-   ```
-   MONGO_URI=mongodb://localhost:27017/atlas-browser
-   PORT=5000
-   ```
+* **Electron**: Desktop wrapper and main process management.
+* **React**: UI library for the browser interface (Address bar, Tabs, Settings).
+* **Lucide React**: Iconography.
+* **CSS**: Custom styling for components.
 
-4. **Start MongoDB**
-   Ensure MongoDB is running on your machine or provide a cloud MongoDB URI.
+### Backend & Data
 
-
-5. **Running the Application** 
-To run the application in development mode (React + Electron + Backend):
-   ```bash
-   npm run electron:dev
-   ```
-
-## 🛠️ Tech Stack
-
-* **Frontend:** React.js (Create React App) with Hooks for state management
-* **Desktop Wrapper:** Electron.js
-* **Backend:** Node.js with Express.js
-* **Database:** MongoDB with Mongoose ODM
-* **Styling:** CSS3 with CSS Variables & Flexbox
-* **Icons:** Lucide React
-* **State Management:** React Context API (`BrowserContext`) with localStorage + API sync
-* **Authentication:** Username/password-based with MongoDB persistence
+* **Node.js & Express**: API server handling auth and user data.
+* **MongoDB & Mongoose**: Database for storing Users, History, Bookmarks, and Settings.
+* **Bcryptjs**: Password hashing and security.
+* **Helmet & CORS**: Security middleware.
 
 ## 📂 Project Structure
 
-```
-webProject/
-├── webBrowser/
-│   ├── Backend/
-│   │   ├── controllers/
-│   │   │   ├── authController.js     # Login/Register logic
-│   │   │   ├── syncController.js     # Data synchronization logic
-│   │   │   └── userController.js     # User data retrieval
-│   │   ├── models/
-│   │   │   └── db.js                 # Mongoose schemas (User, History, etc.)
-│   │   ├── routes/
-│   │   │   ├── authRoutes.js         # Auth endpoints
-│   │   │   └── userRoutes.js         # User data endpoints
-│   │   ├── utils/
-│   │   │   └── helpers.js            # Data formatting helpers
-│   │   ├── server.js                 # Express server entry point
-│   │   └── .env                      # Backend environment variables
-│   ├── public/
-│   │   ├── electron.js               # Electron main process
-│   │   ├── preload.js                # Electron preload script
-│   │   ├── manifest.json             # Web app manifest
-│   │   ├── index.html                # React entry HTML
-│   │   └── robots.txt
-│   ├── src/
-│   │   ├── components/
-│   │   │   ├── AddressBar.js         # URL input & search
-│   │   │   ├── AuthModal.js          # Authentication popup
-│   │   │   ├── BrowserMenu.js        # Main menu dropdown
-│   │   │   ├── BrowserView.js        # WebView wrapper component
-│   │   │   ├── BrowserWindow.js      # Main app layout
-│   │   │   ├── HistoryModal.js       # History viewer
-│   │   │   ├── Modal.js              # Reusable modal wrapper
-│   │   │   ├── NavigationControls.js # Back/Forward/Refresh buttons
-│   │   │   ├── SettingsModal.js      # Search engine options
-│   │   │   ├── StartPage.js          # New tab dashboard
-│   │   │   ├── Tabs.js               # Tab management bar
-│   │   │   └── WindowControls.js     # Min/Max/Close buttons (Win/Linux)
-│   │   ├── contexts/
-│   │   │   ├── AuthContext.js        # User auth state provider
-│   │   │   └── BrowserContext.js     # Browser state (Tabs, history) provider
-│   │   ├── services/
-│   │   │   └── api.js                # Centralized API service
-│   │   ├── styles/
-│   │   │   ├── AddressBar.css
-│   │   │   ├── Browser.css           # Global theme & layout
-│   │   │   ├── BrowserView.css
-│   │   │   ├── NavigationControls.css
-│   │   │   ├── Tabs.css
-│   │   │   └── WindowControls.css
-│   │   ├── utils/
-│   │   │   ├── constants.js          # Configuration (Search engines)
-│   │   │   └── urlHelper.js          # URL processing logic
-│   │   ├── App.js                    # Root React component
-│   │   ├── index.js                  # React entry point
-│   │   └── index.css                 # Global styles
-│   ├── package.json
-│   └── README.md
+```text
+root/
+├── Backend/                 # Express Server Logic
+│   ├── controllers/         # Auth, Sync, and User logic
+│   ├── models/              # Mongoose Schemas (User, History, Bookmark, etc.)
+│   ├── routes/              # API Endpoints
+│   └── server.js            # Backend entry point
+├── public/
+│   ├── electron.js          # Electron Main Process & Native Handlers
+│   └── preload.js           # Context Bridge for IPC
+├── src/
+│   ├── components/          # React UI (BrowserView, AddressBar, Tabs, etc.)
+│   ├── contexts/            # Global State (Auth, Browser)
+│   ├── hooks/               # Custom hooks (useSearchSuggestions)
+│   ├── services/            # API communication logic
+│   ├── styles/              # Component-specific CSS
+│   └── utils/               # Helpers (URL parsing, suggestions)
+└── package.json             # Dependencies and Scripts
 ```
 
-## 🗄️ Database Schema
+## ⚡ Getting Started
 
-The application uses six MongoDB collections:
+### Prerequisites
 
-* **Users:** Stores user credentials and account information
-* **Settings:** Stores user preferences (default search engine)
-* **Shortcuts:** Custom speed dial shortcuts created by users
-* **History:** Browsing history with timestamps
-* **Bookmarks:** User-saved bookmarks
-* **Tabs:** Session state including open tabs and navigation history
+* Node.js (v16+)
+* MongoDB (Local instance or Atlas Connection URI)
 
-## 🔌 API Endpoints
+### Installation
 
-The backend provides the following REST API endpoints:
-
-* `POST /api/register` - User registration
-* `POST /api/login` - User login
-* `GET /api/user/:userId` - Fetch all user data
-* `POST /api/user/:userId/settings` - Update settings
-* `POST /api/user/:userId/shortcuts` - Save shortcuts
-* `POST /api/user/:userId/history` - Add history item
-* `DELETE /api/user/:userId/history` - Clear history
-* `POST /api/user/:userId/bookmarks` - Save bookmarks
-* `POST /api/user/:userId/tabs` - Save tab state
-
-## 🎨 Theme Customization
-
-The "Midnight Matte" theme uses CSS variables defined in `src/styles/Browser.css`. Modify these variables to customize the appearance:
-
-```css
-:root {
-  /* Modern Dark Palette (Zinc-inspired) */
-  --bg-primary: #09090b;   /* Deepest black */
-  --bg-secondary: #18181b; /* Sidebar/Toolbar */
-  --bg-tertiary: #27272a;  /* Hover states */
-  --border-color: #3f3f46;
-  --text-primary: #fafafa;
-  --text-secondary: #a1a1aa;
-  --accent-color: #38bdf8;
-}
+1. **Clone the repository:**
+```bash
+git clone https://github.com/youssef-sabri/webbrowser.git
+cd webbrowser
 ```
 
-## 📝 Features in Detail
+2. **Install Dependencies:**
+```bash
+npm install
+```
 
-### Authentication
-Users can create accounts and log in to sync their browsing data (history, bookmarks, shortcuts) across sessions. All data is encrypted and stored securely in MongoDB.
+3. **Environment Setup:**
+Create a `.env` file in the `Backend` directory:
+```env
+PORT=5000
+MONGO_URI=mongodb://localhost:27017/atlas-browser
+# Add other JWT or Auth secrets as required by authController
+```
 
-### Browsing
-The browser supports standard navigation with back/forward buttons, page refresh, and home button. Users can open multiple tabs with independent navigation histories and zoom levels.
+### Running the Application
 
-### History & Bookmarks
-Browsing history is automatically logged with timestamps and can be viewed or cleared. Bookmarks can be saved and accessed from the bookmarks bar.
+To run the React frontend and the Electron shell concurrently (which also auto-spawns the backend):
 
-### Speed Dial
-Users can customize their start page with frequently visited sites. Custom shortcuts are persistent and synced to the server.
+```bash
+npm run electron:dev
+```
 
-### Search
-The address bar intelligently handles URLs, domain names, and search queries. Users can configure their preferred search engine from the settings menu.
+*This command uses `concurrently` to start the React dev server, waits for it to load, and then launches the Electron application.*
 
-## 🚀 Future Enhancements
+## 🔒 Security
 
-* Extensions/Plugin system
-* Sync across devices
-* Private browsing mode
-* Download manager
-* Password manager integration
-* Theme marketplace
-* Improved security indicators
-* Performance optimizations
+*   **Context Isolation (`contextIsolation: true`)**: Strictly separates the internal Electron API from the web content, preventing malicious scripts from accessing native Node.js primitives.
+*   **Webview Isolation**: All browsing content is rendered inside a `<webview>` tag, ensuring that user-loaded pages run in a separate process from the browser UI itself.
+*   **Secure IPC**: Communication between the UI and Main Process is limited to a specific set of allowed actions defined in `preload.js`.
+*   **Backend Hardening**: Uses **Helmet** middleware to set secure HTTP headers. *Note: `contentSecurityPolicy` is explicitly disabled to allow the proxying of search suggestions from external domains.*
+*   **Proxy Search**: Search suggestions are routed through the local backend to avoid CORS issues and prevent direct exposure of the client to third-party suggestion APIs.
